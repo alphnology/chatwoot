@@ -14,7 +14,7 @@
 
 # ------- Branding Related Config ------- #
 - name: INSTALLATION_NAME
-  value: 'Octopus'
+  value: 'Chatwoot'
   display_title: 'Installation Name'
   description: 'The installation wide name that would be used in the dashboard, title etc.'
 - name: LOGO_THUMBNAIL
@@ -30,31 +30,29 @@
   display_title: 'Logo Dark Mode'
   description: 'The logo that would be used on the dashboard, login page etc. for dark mode'
 - name: BRAND_URL
-  value: 'https://alphnology.com'
+  value: 'https://www.chatwoot.com'
   display_title: 'Brand URL'
   description: 'The URL that would be used in emails under the section “Powered By”'
 - name: WIDGET_BRAND_URL
-  value: 'https://alphnology.com'
+  value: 'https://www.chatwoot.com'
   display_title: 'Widget Brand URL'
   description: 'The URL that would be used in the widget under the section “Powered By”'
 - name: BRAND_NAME
-  value: 'Alphnology'
+  value: 'Chatwoot'
   display_title: 'Brand Name'
   description: 'The name that would be used in emails and the widget'
 - name: TERMS_URL
-# Pending to modify
-  value: 'https://alphnology.com'
+  value: 'https://www.chatwoot.com/terms-of-service'
   display_title: 'Terms URL'
   description: 'The terms of service URL displayed in Signup Page'
 - name: PRIVACY_URL
-# Pending to modify
-  value: 'https://alphnology.com'
+  value: 'https://www.chatwoot.com/privacy-policy'
   display_title: 'Privacy URL'
   description: 'The privacy policy URL displayed in the app'
 - name: DISPLAY_MANIFEST
   value: true
-  display_title: 'Octopus Metadata'
-  description: 'Display default Octopus metadata like favicons and upgrade warnings'
+  display_title: 'Chatwoot Metadata'
+  description: 'Display default Chatwoot metadata like favicons and upgrade warnings'
   type: boolean
 # ------- End of Branding Related Config ------- #
 
@@ -129,23 +127,23 @@
 - name: CHATWOOT_INBOX_TOKEN
   value:
   display_title: 'Inbox Token'
-  description: 'The Octopus Inbox Token for Contact Support in Cloud'
+  description: 'The Chatwoot Inbox Token for Contact Support in Cloud'
   locked: false
 - name: CHATWOOT_INBOX_HMAC_KEY
   value:
   display_title: 'Inbox HMAC Key'
-  description: 'The Octopus Inbox HMAC Key for Contact Support in Cloud'
+  description: 'The Chatwoot Inbox HMAC Key for Contact Support in Cloud'
   locked: false
 - name: CHATWOOT_CLOUD_PLANS
   value:
   description: 'Config to store stripe plans for cloud'
 - name: DEPLOYMENT_ENV
   value: self-hosted
-  description: 'The deployment environment of the installation, to differentiate between Octopus cloud and self-hosted'
+  description: 'The deployment environment of the installation, to differentiate between Chatwoot cloud and self-hosted'
 - name: ANALYTICS_TOKEN
   value:
   display_title: 'Analytics Token'
-  description: 'The June.so analytics token for Octopus cloud'
+  description: 'The June.so analytics token for Chatwoot cloud'
 - name: CLEARBIT_API_KEY
   value:
   display_title: 'Clearbit API Key'
@@ -161,13 +159,13 @@
   description: 'The number of licenses purchased for the installation, retrieved from the billing API'
 - name: CHATWOOT_SUPPORT_WEBSITE_TOKEN
   value:
-  description: 'The Octopus website token, used to identify the Octopus inbox and display the "Contact Support" option on the billing page'
+  description: 'The Chatwoot website token, used to identify the Chatwoot inbox and display the "Contact Support" option on the billing page'
 - name: CHATWOOT_SUPPORT_SCRIPT_URL
   value:
-  description: 'The Octopus script base URL, to display the "Contact Support" option on the billing page'
+  description: 'The Chatwoot script base URL, to display the "Contact Support" option on the billing page'
 - name: CHATWOOT_SUPPORT_IDENTIFIER_HASH
   value:
-  description: 'The Octopus identifier hash, to validate the contact in the live chat window.'
+  description: 'The Chatwoot identifier hash, to validate the contact in the live chat window.'
 # ------- End of Chatwoot Internal Config for Self Hosted ----#
 
 ## ------ Configs added for enterprise clients ------ ##
