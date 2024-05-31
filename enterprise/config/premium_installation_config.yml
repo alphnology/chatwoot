@@ -1,6 +1,6 @@
 # ------- Branding Related Config ------- #
 - name: INSTALLATION_NAME
-  value: 'Octopus'
+  value: 'Chatwoot'
 - name: LOGO_THUMBNAIL
   value: '/brand-assets/logo_thumbnail.svg'
 - name: LOGO
@@ -8,9 +8,9 @@
 - name: LOGO_DARK
   value: '/brand-assets/logo_dark.svg'
 - name: BRAND_URL
-  value: 'https://alphnology.com'
+  value: 'https://www.chatwoot.com'
 - name: WIDGET_BRAND_URL
-  value: 'https://alphnology.com'
+  value: 'https://www.chatwoot.com'
 - name: BRAND_NAME
   value: 'Chatwoot'
 - name: TERMS_URL
