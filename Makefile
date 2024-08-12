@@ -46,7 +46,11 @@ debug:
 debug_worker:
 	overmind connect worker
 
-docker: 
+docker:
 	docker build -t $(APP_NAME) -f ./docker/Dockerfile .
+
+docker-amd64:
+	docker build --platform linux/amd64 -t $(APP_NAME) -f ./docker/Dockerfile .
+
 
 .PHONY: setup db_create db_migrate db_seed db console server burn docker run force_run debug debug_worker

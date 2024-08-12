@@ -51,6 +51,6 @@ module Api::V2::Accounts::ReportsHelper
   end
 
   def time_to_minutes(time_in_seconds)
-    (time_in_seconds / 60).to_i
+    (time_in_seconds / 60 / 60).to_f
   end
 end
