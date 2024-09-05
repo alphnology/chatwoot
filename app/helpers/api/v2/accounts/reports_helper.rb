@@ -46,11 +46,15 @@ module Api::V2::Accounts::ReportsHelper
     [
       report_metric[:conversations_count],
       time_to_minutes(report_metric[:avg_first_response_time]),
-      time_to_minutes(report_metric[:avg_resolution_time])
+      time_to_hours(report_metric[:avg_resolution_time])
     ]
   end
 
   def time_to_minutes(time_in_seconds)
+    (time_in_seconds / 60).to_f
+  end
+
+  def time_to_hours(time_in_seconds)
     (time_in_seconds / 60 / 60).to_f
   end
 end
