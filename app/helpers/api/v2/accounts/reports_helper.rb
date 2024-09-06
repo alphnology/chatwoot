@@ -45,9 +45,15 @@ module Api::V2::Accounts::ReportsHelper
   def generate_readable_report_metrics(report_metric)
     [
       report_metric[:conversations_count],
-      time_to_minutes(report_metric[:avg_first_response_time]),
-      time_to_hours(report_metric[:avg_resolution_time])
+      convert_seconds_to_hr_min(report_metric[:avg_first_response_time]),
+      convert_seconds_to_hr_min(report_metric[:avg_resolution_time])
     ]
+  end
+
+  def convert_seconds_to_hr_min(seconds)
+    hours = seconds.div(3600)    # Use integer division
+    minutes = (seconds % 3600).div(60)  # Ensure minutes are whole numbers
+    "#{hours} Hr #{minutes} Min"
   end
 
   def time_to_minutes(time_in_seconds)
