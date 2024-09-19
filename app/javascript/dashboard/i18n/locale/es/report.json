@@ -439,7 +439,7 @@
     "ACCOUNT_CONVERSATIONS": {
       "HEADER": "Conversaciones abiertas",
       "LOADING_MESSAGE": "Cargando métricas de conversación...",
-      "OPEN": "Abrir",
+      "OPEN": "Abierta",
       "UNATTENDED": "Desatendido",
       "UNASSIGNED": "Sin asignar"
     },
@@ -455,7 +455,7 @@
       "NO_AGENTS": "No hay conversaciones por agentes",
       "TABLE_HEADER": {
         "AGENT": "Agente",
-        "OPEN": "ABIERTA",
+        "OPEN": "Abierta",
         "UNATTENDED": "Desatendido",
         "STATUS": "Estado"
       }
