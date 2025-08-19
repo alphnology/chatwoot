@@ -40,9 +40,7 @@ class Whatsapp::Providers::BaseService
     rows = []
     items.each do |item|
       row = { 'id' => item['value'], 'title' => item['title'] }
-      if item.has_key?("description")
-        row['description'] = item['description']
-      end
+      row['description'] = item['description'] if item.has_key?('description')
       rows << row
     end
     rows
@@ -59,11 +57,29 @@ class Whatsapp::Providers::BaseService
   end
 
   def create_payload_based_on_items(message)
-    if message.content_attributes['items'].length <= 3
+    if message.content_attributes.has_key?('flow')
+      create_flow_payload(message)
+    elsif message.content_attributes['items'].length <= 3
       create_button_payload(message)
     else
       create_list_payload(message)
     end
+  end
+
+  def create_flow_payload(message)
+    flow_data = message.content_attributes['flow']
+
+    flow_action = {
+      name: 'flow',
+      parameters: {
+        flow_id: (flow_data['id'] if flow_data['id']),
+        flow_name: (flow_data['name'] unless flow_data['id']),
+        flow_message_version: '3',
+        flow_cta: flow_data['cta']
+      }
+    }
+
+    create_payload('flow', message.content, JSON.generate(flow_action))
   end
 
   def create_button_payload(message)

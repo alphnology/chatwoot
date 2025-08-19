@@ -1,5 +1,6 @@
 class ContentAttributeValidator < ActiveModel::Validator
   ALLOWED_SELECT_ITEM_KEYS = [:title, :value, :description].freeze
+  ALLOWED_SELECT_ITEM_FLOW_KEYS = [:title, :value, :description].freeze
   ALLOWED_CARD_ITEM_KEYS = [:title, :description, :media_url, :actions].freeze
   ALLOWED_CARD_ITEM_ACTION_KEYS = [:text, :type, :payload, :uri].freeze
   ALLOWED_FORM_ITEM_KEYS = [:type, :placeholder, :label, :name, :options, :default, :required, :pattern, :title, :pattern_error].freeze
@@ -8,8 +9,12 @@ class ContentAttributeValidator < ActiveModel::Validator
   def validate(record)
     case record.content_type
     when 'input_select'
-      validate_items!(record)
-      validate_item_attributes!(record, ALLOWED_SELECT_ITEM_KEYS)
+      if record.items
+        validate_items!(record)
+        validate_item_attributes!(record, ALLOWED_SELECT_ITEM_KEYS)
+      else
+        validate_flow!(record)
+      end
     when 'cards'
       validate_items!(record)
       validate_item_attributes!(record, ALLOWED_CARD_ITEM_KEYS)
@@ -28,6 +33,10 @@ class ContentAttributeValidator < ActiveModel::Validator
   def validate_items!(record)
     record.errors.add(:content_attributes, 'At least one item is required.') if record.items.blank?
     record.errors.add(:content_attributes, 'Items should be a hash.') if record.items.reject { |item| item.is_a?(Hash) }.present?
+  end
+
+  def validate_flow!(record)
+    record.errors.add(:content_attributes, 'Flow data is required.') unless record.flow
   end
 
   def validate_item_attributes!(record, valid_keys)
