@@ -149,7 +149,8 @@ class Whatsapp::IncomingMessageBaseService
       sender: @contact,
       source_id: message[:id].to_s,
       in_reply_to_external_id: @in_reply_to_external_id,
-      in_reply_to_interactive_id: @in_reply_to_interactive_id
+      in_reply_to_interactive_id: @in_reply_to_interactive_id,
+      flow_data: @flow_data
     )
   end
 
