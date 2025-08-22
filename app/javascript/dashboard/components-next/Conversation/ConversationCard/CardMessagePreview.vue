@@ -21,7 +21,7 @@ const lastNonActivityMessageContent = computed(() => {
     props.conversation;
   const { email: { subject } = {} } = customAttributes;
   return getPlainText(
-    subject || lastNonActivityMessage.content || t('CHAT_LIST.NO_CONTENT')
+    subject || lastNonActivityMessage?.content || t('CHAT_LIST.NO_CONTENT')
   );
 });
 
@@ -47,6 +47,7 @@ const unreadMessagesCount = computed(() => {
     </p>
     <div class="flex items-center flex-shrink-0 gap-2 pb-2">
       <Avatar
+        v-if="assignee.name"
         :name="assignee.name"
         :src="assignee.thumbnail"
         :size="20"

@@ -8,6 +8,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { useStorage } from '@vueuse/core';
 import { useSidebarKeyboardShortcuts } from './useSidebarKeyboardShortcuts';
+import { vOnClickOutside } from '@vueuse/components';
 
 import Button from 'dashboard/components-next/button/Button.vue';
 import SidebarGroup from './SidebarGroup.vue';
@@ -17,10 +18,18 @@ import SidebarAccountSwitcher from './SidebarAccountSwitcher.vue';
 import Logo from 'next/icon/Logo.vue';
 import ComposeConversation from 'dashboard/components-next/NewConversation/ComposeConversation.vue';
 
+const props = defineProps({
+  isMobileSidebarOpen: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const emit = defineEmits([
   'closeKeyShortcutModal',
   'openKeyShortcutModal',
   'showCreateAccountModal',
+  'closeMobileSidebar',
 ]);
 
 const { accountScopedRoute } = useAccount();
@@ -77,6 +86,39 @@ const sortedInboxes = computed(() =>
   inboxes.value.slice().sort((a, b) => a.name.localeCompare(b.name))
 );
 
+const closeMobileSidebar = () => {
+  if (!props.isMobileSidebarOpen) return;
+  emit('closeMobileSidebar');
+};
+
+const newReportRoutes = () => [
+  {
+    name: 'Reports Agent',
+    label: t('SIDEBAR.REPORTS_AGENT'),
+    to: accountScopedRoute('agent_reports_index'),
+    activeOn: ['agent_reports_show'],
+  },
+  {
+    name: 'Reports Label',
+    label: t('SIDEBAR.REPORTS_LABEL'),
+    to: accountScopedRoute('label_reports_index'),
+  },
+  {
+    name: 'Reports Inbox',
+    label: t('SIDEBAR.REPORTS_INBOX'),
+    to: accountScopedRoute('inbox_reports_index'),
+    activeOn: ['inbox_reports_show'],
+  },
+  {
+    name: 'Reports Team',
+    label: t('SIDEBAR.REPORTS_TEAM'),
+    to: accountScopedRoute('team_reports_index'),
+    activeOn: ['team_reports_show'],
+  },
+];
+
+const reportRoutes = computed(() => newReportRoutes());
+
 const menuItems = computed(() => {
   return [
     {
@@ -84,6 +126,10 @@ const menuItems = computed(() => {
       label: t('SIDEBAR.INBOX'),
       icon: 'i-lucide-inbox',
       to: accountScopedRoute('inbox_view'),
+      activeOn: ['inbox_view', 'inbox_view_conversation'],
+      getterKeys: {
+        badge: 'notifications/getHasUnreadNotifications',
+      },
     },
     {
       name: 'Conversation',
@@ -172,19 +218,19 @@ const menuItems = computed(() => {
       label: t('SIDEBAR.CAPTAIN'),
       children: [
         {
+          name: 'Assistants',
+          label: t('SIDEBAR.CAPTAIN_ASSISTANTS'),
+          to: accountScopedRoute('captain_assistants_index'),
+        },
+        {
           name: 'Documents',
-          label: 'Documents',
-          to: accountScopedRoute('captain', { page: 'documents' }),
+          label: t('SIDEBAR.CAPTAIN_DOCUMENTS'),
+          to: accountScopedRoute('captain_documents_index'),
         },
         {
           name: 'Responses',
-          label: 'Responses',
-          to: accountScopedRoute('captain', { page: 'responses' }),
-        },
-        {
-          name: 'Playground',
-          label: 'Playground',
-          to: accountScopedRoute('captain', { page: 'playground' }),
+          label: t('SIDEBAR.CAPTAIN_RESPONSES'),
+          to: accountScopedRoute('captain_responses_index'),
         },
       ],
     },
@@ -202,6 +248,12 @@ const menuItems = computed(() => {
             { page: 1, search: undefined }
           ),
           activeOn: ['contacts_dashboard_index', 'contacts_edit'],
+        },
+        {
+          name: 'Active',
+          label: t('SIDEBAR.ACTIVE'),
+          to: accountScopedRoute('contacts_dashboard_active'),
+          activeOn: ['contacts_dashboard_active'],
         },
         {
           name: 'Segments',
@@ -260,30 +312,11 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.REPORTS_CONVERSATION'),
           to: accountScopedRoute('conversation_reports'),
         },
+        ...reportRoutes.value,
         {
           name: 'Reports CSAT',
           label: t('SIDEBAR.CSAT'),
           to: accountScopedRoute('csat_reports'),
-        },
-        {
-          name: 'Reports Agent',
-          label: t('SIDEBAR.REPORTS_AGENT'),
-          to: accountScopedRoute('agent_reports'),
-        },
-        {
-          name: 'Reports Label',
-          label: t('SIDEBAR.REPORTS_LABEL'),
-          to: accountScopedRoute('label_reports'),
-        },
-        {
-          name: 'Reports Inbox',
-          label: t('SIDEBAR.REPORTS_INBOX'),
-          to: accountScopedRoute('inbox_reports'),
-        },
-        {
-          name: 'Reports Team',
-          label: t('SIDEBAR.REPORTS_TEAM'),
-          to: accountScopedRoute('team_reports'),
         },
         {
           name: 'Reports SLA',
@@ -311,6 +344,11 @@ const menuItems = computed(() => {
           name: 'SMS',
           label: t('SIDEBAR.SMS'),
           to: accountScopedRoute('campaigns_sms_index'),
+        },
+        {
+          name: 'WhatsApp',
+          label: t('SIDEBAR.WHATSAPP'),
+          to: accountScopedRoute('campaigns_whatsapp_index'),
         },
       ],
     },
@@ -464,12 +502,22 @@ const menuItems = computed(() => {
 
 <template>
   <aside
-    class="w-[200px] bg-n-solid-2 rtl:border-l ltr:border-r border-n-weak h-screen flex flex-col text-sm pb-1"
+    v-on-click-outside="[
+      closeMobileSidebar,
+      { ignore: ['#mobile-sidebar-launcher'] },
+    ]"
+    class="bg-n-solid-2 rtl:border-l ltr:border-r border-n-weak flex flex-col text-sm pb-1 fixed top-0 ltr:left-0 rtl:right-0 h-full z-40 transition-transform duration-200 ease-in-out md:static w-[200px] basis-[200px] md:flex-shrink-0 md:ltr:translate-x-0 md:rtl:-translate-x-0"
+    :class="[
+      {
+        'shadow-lg md:shadow-none': isMobileSidebarOpen,
+        'ltr:-translate-x-full rtl:translate-x-full': !isMobileSidebarOpen,
+      },
+    ]"
   >
     <section class="grid gap-2 mt-2 mb-4">
       <div class="flex items-center min-w-0 gap-2 px-2">
         <div class="grid flex-shrink-0 size-6 place-content-center">
-          <Logo />
+          <Logo class="size-4" />
         </div>
         <div class="flex-shrink-0 w-px h-3 bg-n-strong" />
         <SidebarAccountSwitcher
@@ -506,7 +554,7 @@ const menuItems = computed(() => {
       </div>
     </section>
     <nav class="grid flex-grow gap-2 px-2 pb-5 overflow-y-scroll no-scrollbar">
-      <ul class="flex flex-col gap-2 m-0 list-none">
+      <ul class="flex flex-col gap-1.5 m-0 list-none">
         <SidebarGroup
           v-for="item in menuItems"
           :key="item.name"

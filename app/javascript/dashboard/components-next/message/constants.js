@@ -20,6 +20,8 @@ export const MESSAGE_VARIANTS = {
 export const SENDER_TYPES = {
   CONTACT: 'Contact',
   USER: 'User',
+  AGENT_BOT: 'agent_bot',
+  CAPTAIN_ASSISTANT: 'captain_assistant',
 };
 
 export const ORIENTATION = {

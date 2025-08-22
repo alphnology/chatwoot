@@ -57,46 +57,6 @@
     "TITLE": "Изменить контакт",
     "DESC": "Изменить контактные данные"
   },
-  "CREATE_CONTACT": {
-    "BUTTON_LABEL": "Новый контакт",
-    "TITLE": "Создать новый контакт",
-    "DESC": "Добавить основную информацию о контакте."
-  },
-  "IMPORT_CONTACTS": {
-    "BUTTON_LABEL": "Импортировать",
-    "TITLE": "Импорт контактов",
-    "DESC": "Импорт контактов из CSV-файла.",
-    "DOWNLOAD_LABEL": "Скачать образец csv-файла.",
-    "FORM": {
-      "LABEL": "CSV файл",
-      "SUBMIT": "Импортировать",
-      "CANCEL": "Отменить"
-    },
-    "SUCCESS_MESSAGE": "Вы будете уведомлены по электронной почте, когда импорт будет завершен.",
-    "ERROR_MESSAGE": "Произошла ошибка, попробуйте еще раз"
-  },
-  "EXPORT_CONTACTS": {
-    "BUTTON_LABEL": "Экспорт",
-    "TITLE": "Экспорт контактов",
-    "DESC": "Экспорт контактов в CSV файл.",
-    "SUCCESS_MESSAGE": "Выполняется экспорт. Вы будете уведомлены по электронной почте, когда файл экспорта будет готов к загрузке.",
-    "ERROR_MESSAGE": "Произошла ошибка, попробуйте еще раз",
-    "CONFIRM": {
-      "TITLE": "Экспорт контактов",
-      "MESSAGE": "Вы уверены, что хотите экспортировать все контакты?",
-      "FILTERED_MESSAGE": "Вы действительно хотите экспортировать все отфильтрованные контакты?",
-      "YES": "Да, экспортировать",
-      "NO": "Нет, отменить"
-    }
-  },
-  "DELETE_NOTE": {
-    "CONFIRM": {
-      "TITLE": "Подтвердите удаление",
-      "MESSAGE": "Вы уверены, что хотите удалить эту заметку?",
-      "YES": "Да, удалить",
-      "NO": "Нет, не удалять"
-    }
-  },
   "DELETE_CONTACT": {
     "BUTTON_LABEL": "Удалить контакт",
     "TITLE": "Удалить контакт",
@@ -224,79 +184,14 @@
     }
   },
   "CONTACTS_PAGE": {
-    "HEADER": "Контакты",
-    "FIELDS": "Поля контакта",
-    "SEARCH_BUTTON": "Поиск",
-    "SEARCH_INPUT_PLACEHOLDER": "Поиск по контактам",
-    "FILTER_CONTACTS": "Фильтр",
-    "FILTER_CONTACTS_SAVE": "Сохранить фильтр",
-    "FILTER_CONTACTS_DELETE": "Удалить фильтр",
-    "FILTER_CONTACTS_EDIT": "Редактировать сегмент",
     "LIST": {
-      "LOADING_MESSAGE": "Загрузка контактов...",
-      "404": "Нет контактов по вашему запросу 🔍",
-      "NO_CONTACTS": "Нет доступных контактов",
       "TABLE_HEADER": {
-        "NAME": "Имя",
-        "PHONE_NUMBER": "Номер телефона",
-        "CONVERSATIONS": "Диалоги",
-        "LAST_ACTIVITY": "Последние действия",
-        "CREATED_AT": "Дата создания",
-        "COUNTRY": "Страна",
-        "CITY": "Город",
-        "SOCIAL_PROFILES": "Профили в соц. сетях",
-        "COMPANY": "Компания",
-        "EMAIL_ADDRESS": "Email"
-      },
-      "VIEW_DETAILS": "Просмотреть подробности"
-    }
-  },
-  "CONTACT_PROFILE": {
-    "BACK_BUTTON": "Контакты",
-    "LOADING": "Загрузка профиля контакта..."
-  },
-  "REMINDER": {
-    "ADD_BUTTON": {
-      "BUTTON": "Добавить",
-      "TITLE": "Shift + Enter для создания задачи"
-    },
-    "FOOTER": {
-      "DUE_DATE": "Дата окончания",
-      "LABEL_TITLE": "Установить тип"
-    }
-  },
-  "NOTES": {
-    "FETCHING_NOTES": "Получение заметок...",
-    "NOT_AVAILABLE": "Нет заметок для этого контакта",
-    "HEADER": {
-      "TITLE": "Заметки"
-    },
-    "LIST": {
-      "LABEL": "добавлена заметка"
-    },
-    "ADD": {
-      "BUTTON": "Добавить",
-      "PLACEHOLDER": "Добавить заметку",
-      "TITLE": "Shift + Enter для создания заметки"
-    },
-    "CONTENT_HEADER": {
-      "DELETE": "Удалить заметку"
-    }
-  },
-  "EVENTS": {
-    "HEADER": {
-      "TITLE": "Действия"
-    },
-    "BUTTON": {
-      "PILL_BUTTON_NOTES": "заметки",
-      "PILL_BUTTON_EVENTS": "события",
-      "PILL_BUTTON_CONVO": "диалоги"
+        "SOCIAL_PROFILES": "Профили в соц. сетях"
+      }
     }
   },
   "CUSTOM_ATTRIBUTES": {
-    "ADD_BUTTON_TEXT": "Добавить атрибуты",
     "BUTTON": "Добавить пользовательский атрибут",
-    "NOT_AVAILABLE": "Для этого контакта нет пользовательских атрибутов.",
     "COPY_SUCCESSFUL": "Скопировано в буфер обмена",
     "SHOW_MORE": "Показать все атрибуты",
     "SHOW_LESS": "Скрыть лишние атрибуты",
@@ -355,7 +250,7 @@
   },
   "MERGE_CONTACTS": {
     "TITLE": "Объединить контакты",
-    "DESCRIPTION": "Объединение контактов для объединения двух профилей в один, включая все атрибуты и разговоры. В случае конфликта приоритет будет иметь атрибуты первичного контакта.",
+    "DESCRIPTION": "Объединение контактов для объединения двух профилей в один, включая все атрибуты и диалоги. В случае конфликта приоритет будет иметь атрибуты первичного контакта.",
     "PRIMARY": {
       "TITLE": "Основной контакт",
       "HELP_LABEL": "Удалять"
@@ -371,7 +266,7 @@
       "ATTRIBUTE_WARNING": "Контактная информация <strong>{primaryContactName}</strong> будет скопирована в <strong>{parentContactName}</strong>."
     },
     "SEARCH": {
-      "ERROR": "ERROR_MESSAGE"
+      "ERROR_MESSAGE": "Что-то пошло не так. Пожалуйста, попробуйте позже."
     },
     "FORM": {
       "SUBMIT": " Объединить контакты",
@@ -384,6 +279,336 @@
     },
     "DROPDOWN_ITEM": {
       "ID": "(ID: {identifier})"
+    }
+  },
+  "CONTACTS_LAYOUT": {
+    "HEADER": {
+      "TITLE": "Контакты",
+      "SEARCH_TITLE": "Поиск контактов",
+      "ACTIVE_TITLE": "Активные контакты",
+      "SEARCH_PLACEHOLDER": "Поиск...",
+      "MESSAGE_BUTTON": "Сообщение",
+      "SEND_MESSAGE": "Отправить сообщение",
+      "BLOCK_CONTACT": "Заблокировать контакт",
+      "UNBLOCK_CONTACT": "Разблокировать контакт",
+      "BREADCRUMB": {
+        "CONTACTS": "Контакты"
+      },
+      "ACTIONS": {
+        "CONTACT_CREATION": {
+          "ADD_CONTACT": "Добавить контакт",
+          "EXPORT_CONTACT": "Экспорт контактов",
+          "IMPORT_CONTACT": "Импорт контактов",
+          "SAVE_CONTACT": "Сохранить контакт",
+          "EMAIL_ADDRESS_DUPLICATE": "Этот адрес электронной почты используется для другого контакта.",
+          "PHONE_NUMBER_DUPLICATE": "Этот номер телефона используется для другого контакта.",
+          "SUCCESS_MESSAGE": "Контакт успешно сохранен",
+          "ERROR_MESSAGE": "Не удалось сохранить контакт. Пожалуйста, повторите попытку позже."
+        },
+        "BLOCK_SUCCESS_MESSAGE": "Этот контакт успешно заблокирован",
+        "BLOCK_ERROR_MESSAGE": "Не удается заблокировать контакт. Пожалуйста, повторите попытку позже.",
+        "UNBLOCK_SUCCESS_MESSAGE": "Этот контакт успешно разблокирован",
+        "UNBLOCK_ERROR_MESSAGE": "Не удается разблокировать контакт. Пожалуйста, повторите попытку позже.",
+        "IMPORT_CONTACT": {
+          "TITLE": "Импорт контактов",
+          "DESCRIPTION": "Импорт контактов из CSV-файла.",
+          "DOWNLOAD_LABEL": "Скачать образец csv-файла.",
+          "LABEL": "CSV файл:",
+          "CHOOSE_FILE": "Выбрать файлы",
+          "CHANGE": "Изменить",
+          "CANCEL": "Отменить",
+          "IMPORT": "Импортировать",
+          "SUCCESS_MESSAGE": "Вы будете уведомлены по электронной почте, когда импорт будет завершен.",
+          "ERROR_MESSAGE": "Произошла ошибка, попробуйте еще раз"
+        },
+        "EXPORT_CONTACT": {
+          "TITLE": "Экспорт контактов",
+          "DESCRIPTION": "Быстрый экспорт csv файла с подробной информацией о ваших контактах",
+          "CONFIRM": "Экспорт",
+          "SUCCESS_MESSAGE": "Выполняется экспорт. Вы будете уведомлены по электронной почте, когда файл экспорта будет готов к загрузке.",
+          "ERROR_MESSAGE": "Произошла ошибка, попробуйте еще раз"
+        },
+        "SORT_BY": {
+          "LABEL": "Сортировать по",
+          "OPTIONS": {
+            "NAME": "Имя",
+            "EMAIL": "Email",
+            "PHONE_NUMBER": "Номер телефона",
+            "COMPANY": "Компания",
+            "COUNTRY": "Страна",
+            "CITY": "Город",
+            "LAST_ACTIVITY": "Последние действия",
+            "CREATED_AT": "Дата создания"
+          }
+        },
+        "ORDER": {
+          "LABEL": "Сортировка",
+          "OPTIONS": {
+            "ASCENDING": "По возрастанию",
+            "DESCENDING": "По убыванию"
+          }
+        },
+        "FILTERS": {
+          "CREATE_SEGMENT": {
+            "TITLE": "Вы хотите сохранить этот фильтр?",
+            "CONFIRM": "Сохранить фильтр",
+            "LABEL": "Имя",
+            "PLACEHOLDER": "Введите название фильтра",
+            "ERROR": "Введите допустимое имя",
+            "SUCCESS_MESSAGE": "Фильтр успешно сохранён",
+            "ERROR_MESSAGE": "Не удается сохранить фильтр. Пожалуйста, повторите попытку позже."
+          },
+          "DELETE_SEGMENT": {
+            "TITLE": "Подтвердите удаление",
+            "DESCRIPTION": "Вы уверены, что хотите удалить фильтр?",
+            "CONFIRM": "Да, удалить",
+            "CANCEL": "Нет, отменить",
+            "SUCCESS_MESSAGE": "Фильтр успешно сохранён",
+            "ERROR_MESSAGE": "Не удалось удалить фильтр. Пожалуйста, повторите попытку позже."
+          }
+        }
+      }
+    },
+    "PAGINATION_FOOTER": {
+      "SHOWING": "Показаны {startItem} - {endItem} из {totalItems} контактов"
+    },
+    "FILTER": {
+      "NAME": "Имя",
+      "EMAIL": "Email",
+      "PHONE_NUMBER": "Номер телефона",
+      "IDENTIFIER": "Идентификатор",
+      "COUNTRY": "Страна",
+      "CITY": "Город",
+      "CREATED_AT": "Дата создания",
+      "LAST_ACTIVITY": "Последние действия",
+      "REFERER_LINK": "Ссылка реферера",
+      "BLOCKED": "Заблокирован",
+      "BLOCKED_TRUE": "Истина",
+      "BLOCKED_FALSE": "Ложь",
+      "BUTTONS": {
+        "CLEAR_FILTERS": "Очистить фильтры",
+        "UPDATE_SEGMENT": "Обновить сегмент",
+        "APPLY_FILTERS": "Применить фильтры",
+        "ADD_FILTER": "Добавить фильтр"
+      },
+      "TITLE": "Фильтровать контакты",
+      "EDIT_SEGMENT": "Редактировать сегмент",
+      "SEGMENT": {
+        "LABEL": "Название сегмента",
+        "INPUT_PLACEHOLDER": "Введите название сегмента"
+      },
+      "ACTIVE_FILTERS": {
+        "MORE_FILTERS": "+ еще {count} фильтров",
+        "CLEAR_FILTERS": "Очистить фильтры"
+      }
+    },
+    "CARD": {
+      "OF": "из",
+      "VIEW_DETAILS": "Просмотреть подробности",
+      "EDIT_DETAILS_FORM": {
+        "TITLE": "Изменить контактные данные",
+        "FORM": {
+          "FIRST_NAME": {
+            "PLACEHOLDER": "Введите имя"
+          },
+          "LAST_NAME": {
+            "PLACEHOLDER": "Введите фамилию"
+          },
+          "EMAIL_ADDRESS": {
+            "PLACEHOLDER": "Введите адрес электронной почты",
+            "DUPLICATE": "Этот адрес электронной почты используется для другого контакта."
+          },
+          "PHONE_NUMBER": {
+            "PLACEHOLDER": "Введите номер телефона",
+            "DUPLICATE": "Этот номер телефона используется для другого контакта."
+          },
+          "CITY": {
+            "PLACEHOLDER": "Введите город"
+          },
+          "COUNTRY": {
+            "PLACEHOLDER": "Выберите страну"
+          },
+          "BIO": {
+            "PLACEHOLDER": "Введите биографию"
+          },
+          "COMPANY_NAME": {
+            "PLACEHOLDER": "Введите название компании"
+          }
+        },
+        "UPDATE_BUTTON": "Обновить контакт",
+        "SUCCESS_MESSAGE": "Контакт успешно обновлен",
+        "ERROR_MESSAGE": "Не удалось обновить контакт. Пожалуйста, повторите попытку позже."
+      },
+      "SOCIAL_MEDIA": {
+        "TITLE": "Изменить ссылки на соц. сети",
+        "FORM": {
+          "FACEBOOK": {
+            "PLACEHOLDER": "Добавить Facebook"
+          },
+          "GITHUB": {
+            "PLACEHOLDER": "Добавить Github"
+          },
+          "INSTAGRAM": {
+            "PLACEHOLDER": "Добавить Instagram"
+          },
+          "LINKEDIN": {
+            "PLACEHOLDER": "Добавить LinkedIn"
+          },
+          "TWITTER": {
+            "PLACEHOLDER": "Добавить Twitter"
+          }
+        }
+      },
+      "DELETE_CONTACT": {
+        "MESSAGE": "Это действие необратимо.",
+        "BUTTON": "Удалить"
+      }
+    },
+    "DETAILS": {
+      "CREATED_AT": "Создано {date}",
+      "LAST_ACTIVITY": "Последняя активность {date}",
+      "DELETE_CONTACT_DESCRIPTION": "Удалить этот контакт. Это действие необратимо",
+      "DELETE_CONTACT": "Удалить контакт",
+      "DELETE_DIALOG": {
+        "TITLE": "Подтвердите удаление",
+        "DESCRIPTION": "Are you sure you want to delete this contact?",
+        "CONFIRM": "Да, удалить",
+        "API": {
+          "SUCCESS_MESSAGE": "Кампания успешно удалена",
+          "ERROR_MESSAGE": "Не удалось удалить канал. Пожалуйста, повторите попытку позже."
+        }
+      },
+      "AVATAR": {
+        "UPLOAD": {
+          "ERROR_MESSAGE": "Не удалось загрузить аватар. Пожалуйста, повторите попытку позже.",
+          "SUCCESS_MESSAGE": "Аватар успешно загружен"
+        },
+        "DELETE": {
+          "SUCCESS_MESSAGE": "Аватар успешно удален",
+          "ERROR_MESSAGE": "Не удалось удалить аватар. Пожалуйста, повторите попытку позже."
+        }
+      }
+    },
+    "SIDEBAR": {
+      "TABS": {
+        "ATTRIBUTES": "Свойства",
+        "HISTORY": "История",
+        "NOTES": "Заметки",
+        "MERGE": "Объединить"
+      },
+      "HISTORY": {
+        "EMPTY_STATE": "Нет предыдущих диалогов, связанных с этим контактом"
+      },
+      "ATTRIBUTES": {
+        "SEARCH_PLACEHOLDER": "Поиск по атрибутам",
+        "UNUSED_ATTRIBUTES": "{count} Используемый атрибут | {count} Неиспользуемые атрибуты",
+        "EMPTY_STATE": "В этой учетной записи нет доступных пользовательских атрибутов контактов. Вы можете создать пользовательский атрибут в настройках.",
+        "YES": "Да",
+        "NO": "Нет",
+        "TRIGGER": {
+          "SELECT": "Выберите значение",
+          "INPUT": "Введите значение"
+        },
+        "VALIDATIONS": {
+          "INVALID_NUMBER": "Недопустимое число",
+          "REQUIRED": "Требуется корректное значение",
+          "INVALID_INPUT": "Неверный ввод",
+          "INVALID_URL": "Некорректный URL",
+          "INVALID_DATE": "Недопустимая дата"
+        },
+        "NO_ATTRIBUTES": "Атрибуты не найдены",
+        "API": {
+          "SUCCESS_MESSAGE": "Атрибут успешно обновлен",
+          "DELETE_SUCCESS_MESSAGE": "Атрибут успешно удалён",
+          "UPDATE_ERROR": "Не удается обновить атрибут. Повторите попытку позже",
+          "DELETE_ERROR": "Невозможно удалить атрибут. Пожалуйста, повторите попытку позже"
+        }
+      },
+      "MERGE": {
+        "TITLE": "Объединить контакты",
+        "DESCRIPTION": "Объедините два профиля в один, включая все атрибуты и диалоги. В случае конфликта приоритет будут иметь атрибуты первичного контакта.",
+        "PRIMARY": "Основной контакт",
+        "PRIMARY_HELP_LABEL": "Будет сохранено",
+        "PRIMARY_REQUIRED_ERROR": "Пожалуйста, выберите контакт для объединения перед продолжением",
+        "PARENT": "Будет объединено",
+        "PARENT_HELP_LABEL": "Удалять",
+        "EMPTY_STATE": "Контакты не найдены",
+        "PLACEHOLDER": "Поиск основного контакта",
+        "SEARCH_PLACEHOLDER": "Поиск по контактам",
+        "SEARCH_ERROR_MESSAGE": "Не удалось найти контакты. Пожалуйста, повторите попытку позже.",
+        "SUCCESS_MESSAGE": "Контакт успешно объединён",
+        "ERROR_MESSAGE": "Невозможно объединить контакты, попробуйте еще раз!",
+        "IS_SEARCHING": "Идёт поиск...",
+        "BUTTONS": {
+          "CANCEL": "Отменить",
+          "CONFIRM": "Объединить контакты"
+        }
+      },
+      "NOTES": {
+        "PLACEHOLDER": "Добавить заметку",
+        "WROTE": "написал",
+        "YOU": "Вы",
+        "SAVE": "Сохранить заметку",
+        "EXPAND": "Развернуть",
+        "COLLAPSE": "Свернуть",
+        "NO_NOTES": "No notes, you can add notes from the contact details page.",
+        "EMPTY_STATE": "Нет заметок, связанных с этим контактом. Вы можете добавить заметку в поле выше."
+      }
+    },
+    "EMPTY_STATE": {
+      "TITLE": "Контакты не найдены в этом аккаунте",
+      "SUBTITLE": "Начните добавлять новые контакты, нажав на кнопку ниже",
+      "BUTTON_LABEL": "Добавить контакт",
+      "SEARCH_EMPTY_STATE_TITLE": "Нет контактов по вашему запросу 🔍",
+      "LIST_EMPTY_STATE_TITLE": "Нет контактов в этом виде 📋",
+      "ACTIVE_EMPTY_STATE_TITLE": "No contacts are active at the moment 🌙"
+    }
+  },
+  "COMPOSE_NEW_CONVERSATION": {
+    "CONTACT_SEARCH": {
+      "ERROR_MESSAGE": "Поиск не удался. Пожалуйста, попробуйте еще раз."
+    },
+    "FORM": {
+      "GO_TO_CONVERSATION": "Просмотр",
+      "SUCCESS_MESSAGE": "Сообщение успешно отправлено!",
+      "ERROR_MESSAGE": "Произошла ошибка при создании диалога. Пожалуйста, повторите попытку позже.",
+      "NO_INBOX_ALERT": "Нет доступных входящих для начала разговора с этим контактом.",
+      "CONTACT_SELECTOR": {
+        "LABEL": "Кому:",
+        "TAG_INPUT_PLACEHOLDER": "Поиск контакта с именем, email или номером телефона",
+        "CONTACT_CREATING": "Создание контакта..."
+      },
+      "INBOX_SELECTOR": {
+        "LABEL": "Через:",
+        "BUTTON": "Показать входящие"
+      },
+      "EMAIL_OPTIONS": {
+        "SUBJECT_LABEL": "Тема :",
+        "SUBJECT_PLACEHOLDER": "Введите тему email",
+        "CC_LABEL": "Cc:",
+        "CC_PLACEHOLDER": "Поиск контакта с email адресом",
+        "BCC_LABEL": "Bcc:",
+        "BCC_PLACEHOLDER": "Поиск контакта с email адресом",
+        "BCC_BUTTON": "Bcc"
+      },
+      "MESSAGE_EDITOR": {
+        "PLACEHOLDER": "Напишите здесь ваше сообщение..."
+      },
+      "WHATSAPP_OPTIONS": {
+        "LABEL": "Выбрать шаблон",
+        "SEARCH_PLACEHOLDER": "Поиск шаблонов",
+        "EMPTY_STATE": "Шаблоны не найдены",
+        "TEMPLATE_PARSER": {
+          "TEMPLATE_NAME": "Шаблон WhatsApp: {templateName}",
+          "VARIABLES": "Переменные",
+          "BACK": "Вернуться",
+          "SEND_MESSAGE": "Отправить сообщение"
+        }
+      },
+      "ACTION_BUTTONS": {
+        "DISCARD": "Сбросить",
+        "SEND": "Отправить ({keyCode})"
+      }
     }
   }
 }

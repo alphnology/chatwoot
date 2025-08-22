@@ -1,6 +1,15 @@
 <script setup>
-import { computed, defineAsyncComponent } from 'vue';
+import { onMounted, computed, ref, toRefs } from 'vue';
+import { useTimeoutFn } from '@vueuse/core';
 import { provideMessageContext } from './provider.js';
+import { useTrack } from 'dashboard/composables';
+import { emitter } from 'shared/helpers/mitt';
+import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+import { LocalStorage } from 'shared/helpers/localStorage';
+import { ACCOUNT_EVENTS } from 'dashboard/helper/AnalyticsHelper/events';
+import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
 import {
   MESSAGE_TYPES,
   ATTACHMENT_TYPES,
@@ -8,6 +17,7 @@ import {
   SENDER_TYPES,
   ORIENTATION,
   MESSAGE_STATUS,
+  CONTENT_TYPES,
 } from './constants';
 
 import Avatar from 'next/avatar/Avatar.vue';
@@ -19,17 +29,16 @@ import FileBubble from './bubbles/File.vue';
 import AudioBubble from './bubbles/Audio.vue';
 import VideoBubble from './bubbles/Video.vue';
 import InstagramStoryBubble from './bubbles/InstagramStory.vue';
-import AttachmentsBubble from './bubbles/Attachments.vue';
 import EmailBubble from './bubbles/Email/Index.vue';
 import UnsupportedBubble from './bubbles/Unsupported.vue';
 import ContactBubble from './bubbles/Contact.vue';
 import DyteBubble from './bubbles/Dyte.vue';
-const LocationBubble = defineAsyncComponent(
-  () => import('./bubbles/Location.vue')
-);
+import LocationBubble from './bubbles/Location.vue';
+import CSATBubble from './bubbles/CSAT.vue';
+import FormBubble from './bubbles/Form.vue';
 
 import MessageError from './MessageError.vue';
-import MessageMeta from './MessageMeta.vue';
+import ContextMenu from 'dashboard/modules/conversations/components/MessageContextMenu.vue';
 
 /**
  * @typedef {Object} Attachment
@@ -65,7 +74,7 @@ import MessageMeta from './MessageMeta.vue';
 
 /**
  * @typedef {Object} Props
- * @property {('sent'|'delivered'|'read'|'failed')} status - The delivery status of the message
+ * @property {('sent'|'delivered'|'read'|'failed'|'progress')} status - The delivery status of the message
  * @property {ContentAttributes} [contentAttributes={}] - Additional attributes of the message content
  * @property {Attachment[]} [attachments=[]] - The attachments associated with the message
  * @property {Sender|null} [sender=null] - The sender information
@@ -78,6 +87,11 @@ import MessageMeta from './MessageMeta.vue';
  * @property {string|null} [error=null] - Error message if the message failed to send
  * @property {string|null} [senderType=null] - The type of the sender
  * @property {string} content - The message content
+ * @property {boolean} [groupWithNext=false] - Whether the message should be grouped with the next message
+ * @property {Object|null} [inReplyTo=null] - The message to which this message is a reply
+ * @property {boolean} [isEmailInbox=false] - Whether the message is from an email inbox
+ * @property {number} conversationId - The ID of the conversation to which the message belongs
+ * @property {number} inboxId - The ID of the inbox to which the message belongs
  */
 
 // eslint-disable-next-line vue/define-macros-order
@@ -93,55 +107,34 @@ const props = defineProps({
     required: true,
     validator: value => Object.values(MESSAGE_STATUS).includes(value),
   },
-  attachments: {
-    type: Array,
-    default: () => [],
-  },
-  private: {
-    type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Number,
-    required: true,
-  },
-  sender: {
-    type: Object,
-    default: null,
-  },
-  senderId: {
-    type: Number,
-    default: null,
-  },
-  senderType: {
+  attachments: { type: Array, default: () => [] },
+  content: { type: String, default: null },
+  contentAttributes: { type: Object, default: () => ({}) },
+  contentType: {
     type: String,
-    default: null,
+    default: 'text',
+    validator: value => Object.values(CONTENT_TYPES).includes(value),
   },
-  content: {
-    type: String,
-    required: true,
-  },
-  contentAttributes: {
-    type: Object,
-    default: () => {},
-  },
-  currentUserId: {
-    type: Number,
-    required: true,
-  },
-  groupWithNext: {
-    type: Boolean,
-    default: false,
-  },
-  inReplyTo: {
-    type: Object,
-    default: null,
-  },
-  isEmailInbox: {
-    type: Boolean,
-    default: false,
-  },
+  conversationId: { type: Number, required: true },
+  createdAt: { type: Number, required: true }, // eslint-disable-line vue/no-unused-properties
+  currentUserId: { type: Number, required: true }, // eslint-disable-line vue/no-unused-properties
+  groupWithNext: { type: Boolean, default: false },
+  inboxId: { type: Number, default: null }, // eslint-disable-line vue/no-unused-properties
+  inboxSupportsReplyTo: { type: Object, default: () => ({}) },
+  inReplyTo: { type: Object, default: null }, // eslint-disable-line vue/no-unused-properties
+  isEmailInbox: { type: Boolean, default: false },
+  private: { type: Boolean, default: false },
+  sender: { type: Object, default: null },
+  senderId: { type: Number, default: null },
+  senderType: { type: String, default: null },
+  sourceId: { type: String, default: '' }, // eslint-disable-line vue/no-unused-properties
 });
+
+const contextMenuPosition = ref({});
+const showBackgroundHighlight = ref(false);
+const showContextMenu = ref(false);
+const { t } = useI18n();
+const route = useRoute();
 
 /**
  * Computes the message variant based on props
@@ -149,15 +142,26 @@ const props = defineProps({
  */
 const variant = computed(() => {
   if (props.private) return MESSAGE_VARIANTS.PRIVATE;
+
   if (props.isEmailInbox) {
     const emailInboxTypes = [MESSAGE_TYPES.INCOMING, MESSAGE_TYPES.OUTGOING];
     if (emailInboxTypes.includes(props.messageType)) {
       return MESSAGE_VARIANTS.EMAIL;
     }
   }
+
+  if (props.contentType === CONTENT_TYPES.INCOMING_EMAIL) {
+    return MESSAGE_VARIANTS.EMAIL;
+  }
+
   if (props.status === MESSAGE_STATUS.FAILED) return MESSAGE_VARIANTS.ERROR;
-  if (props.contentAttributes.isUnsupported)
+  if (props.contentAttributes?.isUnsupported)
     return MESSAGE_VARIANTS.UNSUPPORTED;
+
+  const isBot = !props.sender || props.sender.type === SENDER_TYPES.AGENT_BOT;
+  if (isBot && props.messageType === MESSAGE_TYPES.OUTGOING) {
+    return MESSAGE_VARIANTS.BOT;
+  }
 
   const variants = {
     [MESSAGE_TYPES.INCOMING]: MESSAGE_VARIANTS.USER,
@@ -169,16 +173,34 @@ const variant = computed(() => {
   return variants[props.messageType] || MESSAGE_VARIANTS.USER;
 });
 
-const isMyMessage = computed(() => {
+const isBotOrAgentMessage = computed(() => {
+  if (props.messageType === MESSAGE_TYPES.ACTIVITY) {
+    return false;
+  }
+  // if an outgoing message is still processing, then it's definitely a
+  // message sent by the current user
+  if (
+    props.status === MESSAGE_STATUS.PROGRESS &&
+    props.messageType === MESSAGE_TYPES.OUTGOING
+  ) {
+    return true;
+  }
   const senderId = props.senderId ?? props.sender?.id;
-  const senderType = props.senderType ?? props.sender?.type;
+  const senderType = props.sender?.type ?? props.senderType;
 
-  if (!senderType || !senderId) return false;
+  if (!senderType || !senderId) {
+    return true;
+  }
 
-  return (
-    senderType.toLowerCase() === SENDER_TYPES.USER.toLowerCase() &&
-    props.currentUserId === senderId
-  );
+  if (
+    [SENDER_TYPES.AGENT_BOT, SENDER_TYPES.CAPTAIN_ASSISTANT].includes(
+      senderType
+    )
+  ) {
+    return true;
+  }
+
+  return senderType.toLowerCase() === SENDER_TYPES.USER.toLowerCase();
 });
 
 /**
@@ -186,7 +208,7 @@ const isMyMessage = computed(() => {
  * @returns {import('vue').ComputedRef<'left'|'right'|'center'>} The computed orientation
  */
 const orientation = computed(() => {
-  if (isMyMessage.value) {
+  if (isBotOrAgentMessage.value) {
     return ORIENTATION.RIGHT;
   }
 
@@ -207,8 +229,8 @@ const flexOrientationClass = computed(() => {
 
 const gridClass = computed(() => {
   const map = {
-    [ORIENTATION.LEFT]: 'grid grid-cols-[24px_1fr]',
-    [ORIENTATION.RIGHT]: 'grid grid-cols-1fr',
+    [ORIENTATION.LEFT]: 'grid grid-cols-1fr',
+    [ORIENTATION.RIGHT]: 'grid grid-cols-[1fr_24px]',
   };
 
   return map[orientation.value];
@@ -217,12 +239,12 @@ const gridClass = computed(() => {
 const gridTemplate = computed(() => {
   const map = {
     [ORIENTATION.LEFT]: `
-      "avatar bubble"
-      "spacer meta"
-    `,
-    [ORIENTATION.RIGHT]: `
       "bubble"
       "meta"
+    `,
+    [ORIENTATION.RIGHT]: `
+      "bubble avatar"
+      "meta spacer"
     `,
   };
 
@@ -237,7 +259,7 @@ const shouldGroupWithNext = computed(() => {
 
 const shouldShowAvatar = computed(() => {
   if (props.messageType === MESSAGE_TYPES.ACTIVITY) return false;
-  if (orientation.value === ORIENTATION.RIGHT) return false;
+  if (orientation.value === ORIENTATION.LEFT) return false;
 
   return true;
 });
@@ -248,7 +270,21 @@ const componentToRender = computed(() => {
     if (emailInboxTypes.includes(props.messageType)) return EmailBubble;
   }
 
-  if (props.contentAttributes.isUnsupported) {
+  if (props.contentType === CONTENT_TYPES.INPUT_CSAT) {
+    return CSATBubble;
+  }
+
+  if (
+    [CONTENT_TYPES.INPUT_SELECT, CONTENT_TYPES.FORM].includes(props.contentType)
+  ) {
+    return FormBubble;
+  }
+
+  if (props.contentType === CONTENT_TYPES.INCOMING_EMAIL) {
+    return EmailBubble;
+  }
+
+  if (props.contentAttributes?.isUnsupported) {
     return UnsupportedBubble;
   }
 
@@ -260,7 +296,7 @@ const componentToRender = computed(() => {
     return InstagramStoryBubble;
   }
 
-  if (props.attachments.length === 1) {
+  if (Array.isArray(props.attachments) && props.attachments.length === 1) {
     const fileType = props.attachments[0].fileType;
 
     if (!props.content) {
@@ -275,26 +311,173 @@ const componentToRender = computed(() => {
     if (fileType === ATTACHMENT_TYPES.CONTACT) return ContactBubble;
   }
 
-  if (props.attachments.length > 1 && !props.content) {
-    return AttachmentsBubble;
-  }
-
   return TextBubble;
 });
 
+const shouldShowContextMenu = computed(() => {
+  return !props.contentAttributes?.isUnsupported;
+});
+
+const isBubble = computed(() => {
+  return props.messageType !== MESSAGE_TYPES.ACTIVITY;
+});
+
+const isMessageDeleted = computed(() => {
+  return props.contentAttributes?.deleted;
+});
+
+const payloadForContextMenu = computed(() => {
+  return {
+    id: props.id,
+    content_attributes: props.contentAttributes,
+    content: props.content,
+    conversation_id: props.conversationId,
+  };
+});
+
+const contextMenuEnabledOptions = computed(() => {
+  const hasText = !!props.content;
+  const hasAttachments = !!(props.attachments && props.attachments.length > 0);
+
+  const isOutgoing = props.messageType === MESSAGE_TYPES.OUTGOING;
+  const isFailedOrProcessing =
+    props.status === MESSAGE_STATUS.FAILED ||
+    props.status === MESSAGE_STATUS.PROGRESS;
+
+  return {
+    copy: hasText,
+    delete:
+      (hasText || hasAttachments) &&
+      !isFailedOrProcessing &&
+      !isMessageDeleted.value,
+    cannedResponse: isOutgoing && hasText && !isMessageDeleted.value,
+    copyLink: !isFailedOrProcessing,
+    translate: !isFailedOrProcessing && !isMessageDeleted.value && hasText,
+    replyTo:
+      !props.private &&
+      props.inboxSupportsReplyTo.outgoing &&
+      !isFailedOrProcessing,
+  };
+});
+
+const shouldRenderMessage = computed(() => {
+  const hasAttachments = !!(props.attachments && props.attachments.length > 0);
+  const isEmailContentType = props.contentType === CONTENT_TYPES.INCOMING_EMAIL;
+  const isUnsupported = props.contentAttributes?.isUnsupported;
+  const isAnIntegrationMessage =
+    props.contentType === CONTENT_TYPES.INTEGRATIONS;
+
+  return (
+    hasAttachments ||
+    props.content ||
+    isEmailContentType ||
+    isUnsupported ||
+    isAnIntegrationMessage
+  );
+});
+
+function openContextMenu(e) {
+  const shouldSkipContextMenu =
+    e.target?.classList.contains('skip-context-menu') ||
+    ['a', 'img'].includes(e.target?.tagName.toLowerCase());
+  if (shouldSkipContextMenu || getSelection().toString()) {
+    return;
+  }
+
+  e.preventDefault();
+  if (e.type === 'contextmenu') {
+    useTrack(ACCOUNT_EVENTS.OPEN_MESSAGE_CONTEXT_MENU);
+  }
+  contextMenuPosition.value = {
+    x: e.pageX || e.clientX,
+    y: e.pageY || e.clientY,
+  };
+  showContextMenu.value = true;
+}
+
+function closeContextMenu() {
+  showContextMenu.value = false;
+  contextMenuPosition.value = { x: null, y: null };
+}
+
+function handleReplyTo() {
+  const replyStorageKey = LOCAL_STORAGE_KEYS.MESSAGE_REPLY_TO;
+  const { conversationId, id: replyTo } = props;
+
+  LocalStorage.updateJsonStore(replyStorageKey, conversationId, replyTo);
+  emitter.emit(BUS_EVENTS.TOGGLE_REPLY_TO_MESSAGE, props);
+}
+
+const avatarInfo = computed(() => {
+  // If no sender, return bot info
+  if (!props.sender) {
+    return {
+      name: t('CONVERSATION.BOT'),
+      src: '',
+    };
+  }
+
+  const { sender } = props;
+  const { name, type, avatarUrl, thumbnail } = sender || {};
+
+  // If sender type is agent bot, use avatarUrl
+  if ([SENDER_TYPES.AGENT_BOT, SENDER_TYPES.CAPTAIN_ASSISTANT].includes(type)) {
+    return {
+      name: name ?? '',
+      src: avatarUrl ?? '',
+    };
+  }
+
+  // For all other senders, use thumbnail
+  return {
+    name: name ?? '',
+    src: thumbnail ?? '',
+  };
+});
+
+const avatarTooltip = computed(() => {
+  if (avatarInfo.value.name === '') return '';
+  return `${t('CONVERSATION.SENT_BY')} ${avatarInfo.value.name}`;
+});
+
+const setupHighlightTimer = () => {
+  if (Number(route.query.messageId) !== Number(props.id)) {
+    return;
+  }
+
+  showBackgroundHighlight.value = true;
+  const HIGHLIGHT_TIMER = 1000;
+  useTimeoutFn(() => {
+    showBackgroundHighlight.value = false;
+  }, HIGHLIGHT_TIMER);
+};
+
+onMounted(setupHighlightTimer);
+
 provideMessageContext({
+  ...toRefs(props),
+  isPrivate: computed(() => props.private),
   variant,
-  inReplyTo: props.inReplyTo,
   orientation,
-  isMyMessage,
+  isBotOrAgentMessage,
+  shouldGroupWithNext,
 });
 </script>
 
+<!-- eslint-disable-next-line vue/no-root-v-if -->
 <template>
   <div
-    class="flex w-full"
+    v-if="shouldRenderMessage"
+    :id="`message${props.id}`"
+    class="flex w-full message-bubble-container mb-2"
     :data-message-id="props.id"
-    :class="[flexOrientationClass, shouldGroupWithNext ? 'mb-2' : 'mb-4']"
+    :class="[
+      flexOrientationClass,
+      {
+        'group-with-next': shouldGroupWithNext,
+        'bg-n-alpha-1': showBackgroundHighlight,
+      },
+    ]"
   >
     <div v-if="variant === MESSAGE_VARIANTS.ACTIVITY">
       <ActivityBubble :content="content" />
@@ -304,32 +487,32 @@ provideMessageContext({
       :class="[
         gridClass,
         {
-          'gap-y-2': !shouldGroupWithNext,
+          'gap-y-2': contentAttributes.externalError,
           'w-full': variant === MESSAGE_VARIANTS.EMAIL,
         },
       ]"
-      class="gap-x-3"
+      class="gap-x-2"
       :style="{
         gridTemplateAreas: gridTemplate,
       }"
     >
       <div
         v-if="!shouldGroupWithNext && shouldShowAvatar"
+        v-tooltip.left-end="avatarTooltip"
         class="[grid-area:avatar] flex items-end"
       >
-        <Avatar
-          :name="sender ? sender.name : ''"
-          :src="sender?.thumbnail"
-          :size="24"
-        />
+        <Avatar v-bind="avatarInfo" :size="24" />
       </div>
       <div
-        class="[grid-area:bubble]"
+        class="[grid-area:bubble] flex"
         :class="{
-          'pl-9': ORIENTATION.RIGHT === orientation,
+          'ltr:ml-8 rtl:mr-8 justify-end': orientation === ORIENTATION.RIGHT,
+          'ltr:mr-8 rtl:ml-8': orientation === ORIENTATION.LEFT,
+          'min-w-0': variant === MESSAGE_VARIANTS.EMAIL,
         }"
+        @contextmenu="openContextMenu($event)"
       >
-        <Component :is="componentToRender" v-bind="props" />
+        <Component :is="componentToRender" />
       </div>
       <MessageError
         v-if="contentAttributes.externalError"
@@ -337,16 +520,31 @@ provideMessageContext({
         :class="flexOrientationClass"
         :error="contentAttributes.externalError"
       />
-      <MessageMeta
-        v-else-if="!shouldGroupWithNext"
-        class="[grid-area:meta]"
-        :class="flexOrientationClass"
-        :sender="props.sender"
-        :status="props.status"
-        :private="props.private"
-        :is-my-message="isMyMessage"
-        :created-at="props.createdAt"
+    </div>
+    <div v-if="shouldShowContextMenu" class="context-menu-wrap">
+      <ContextMenu
+        v-if="isBubble"
+        :context-menu-position="contextMenuPosition"
+        :is-open="showContextMenu"
+        :enabled-options="contextMenuEnabledOptions"
+        :message="payloadForContextMenu"
+        hide-button
+        @open="openContextMenu"
+        @close="closeContextMenu"
+        @reply-to="handleReplyTo"
       />
     </div>
   </div>
 </template>
+
+<style lang="scss">
+.group-with-next + .message-bubble-container {
+  .left-bubble {
+    @apply ltr:rounded-tl-sm rtl:rounded-tr-sm;
+  }
+
+  .right-bubble {
+    @apply ltr:rounded-tr-sm rtl:rounded-tl-sm;
+  }
+}
+</style>

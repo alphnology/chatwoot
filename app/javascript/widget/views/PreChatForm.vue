@@ -1,4 +1,5 @@
 <script>
+import { mapActions } from 'vuex';
 import PreChatForm from '../components/PreChat/Form.vue';
 import configMixin from '../mixins/configMixin';
 import routerMixin from '../mixins/routerMixin';
@@ -12,12 +13,22 @@ export default {
   },
   mixins: [configMixin, routerMixin],
   mounted() {
-    emitter.on(ON_CONVERSATION_CREATED, () => {
-      // Redirect to messages page after conversation is created
-      this.replaceRoute('messages');
-    });
+    // Register event listener for conversation creation
+    emitter.on(ON_CONVERSATION_CREATED, this.handleConversationCreated);
+  },
+  beforeUnmount() {
+    emitter.off(ON_CONVERSATION_CREATED, this.handleConversationCreated);
   },
   methods: {
+    ...mapActions('conversation', ['clearConversations']),
+    ...mapActions('conversationAttributes', ['clearConversationAttributes']),
+    handleConversationCreated() {
+      // Redirect to messages page after conversation is created
+      this.replaceRoute('messages');
+      // Only after successful navigation, reset the isUpdatingRoute UIflag in app/javascript/widget/router.js
+      // See issue: https://github.com/chatwoot/chatwoot/issues/10736
+    },
+
     onSubmit({
       fullName,
       emailAddress,
@@ -40,6 +51,8 @@ export default {
           },
         });
       } else {
+        this.clearConversations();
+        this.clearConversationAttributes();
         this.$store.dispatch('conversation/createConversation', {
           fullName: fullName,
           emailAddress: emailAddress,

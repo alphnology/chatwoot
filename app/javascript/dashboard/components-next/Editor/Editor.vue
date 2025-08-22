@@ -4,43 +4,23 @@ import { computed, ref, watch, useSlots } from 'vue';
 import WootEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
 
 const props = defineProps({
-  modelValue: {
-    type: String,
-    default: '',
-  },
-  label: {
-    type: String,
-    default: '',
-  },
-  placeholder: {
-    type: String,
-    default: '',
-  },
-  focusOnMount: {
-    type: Boolean,
-    default: false,
-  },
-  maxLength: {
-    type: Number,
-    default: 200,
-  },
-  showCharacterCount: {
-    type: Boolean,
-    default: true,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  message: {
-    type: String,
-    default: '',
-  },
+  modelValue: { type: String, default: '' },
+  label: { type: String, default: '' },
+  placeholder: { type: String, default: '' },
+  focusOnMount: { type: Boolean, default: false },
+  maxLength: { type: Number, default: 200 },
+  showCharacterCount: { type: Boolean, default: true },
+  disabled: { type: Boolean, default: false },
+  message: { type: String, default: '' },
   messageType: {
     type: String,
     default: 'info',
     validator: value => ['info', 'error', 'success'].includes(value),
   },
+  enableVariables: { type: Boolean, default: false },
+  enableCannedResponses: { type: Boolean, default: true },
+  enabledMenuOptions: { type: Array, default: () => [] },
+  enableCaptainTools: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -56,7 +36,7 @@ const messageClass = computed(() => {
     case 'error':
       return 'text-n-ruby-9 dark:text-n-ruby-9';
     case 'success':
-      return 'text-green-500 dark:text-green-400';
+      return 'text-n-teal-10 dark:text-n-teal-10';
     default:
       return 'text-n-slate-11 dark:text-n-slate-11';
   }
@@ -116,6 +96,10 @@ watch(
         :placeholder="placeholder"
         :focus-on-mount="focusOnMount"
         :disabled="disabled"
+        :enable-variables="enableVariables"
+        :enable-canned-responses="enableCannedResponses"
+        :enabled-menu-options="enabledMenuOptions"
+        :enable-captain-tools="enableCaptainTools"
         @input="handleInput"
         @focus="handleFocus"
         @blur="handleBlur"

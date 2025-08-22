@@ -55,15 +55,8 @@ export default {
     emitter.on(BUS_EVENTS.TOGGLE_REPLY_TO_MESSAGE, this.toggleReplyTo);
   },
   methods: {
-    ...mapActions('conversation', [
-      'sendMessage',
-      'sendAttachment',
-      'clearConversations',
-    ]),
-    ...mapActions('conversationAttributes', [
-      'getAttributes',
-      'clearConversationAttributes',
-    ]),
+    ...mapActions('conversation', ['sendMessage', 'sendAttachment']),
+    ...mapActions('conversationAttributes', ['getAttributes']),
     async handleSendMessage(content) {
       await this.sendMessage({
         content,
@@ -84,8 +77,6 @@ export default {
       this.inReplyTo = null;
     },
     startNewConversation() {
-      this.clearConversations();
-      this.clearConversationAttributes();
       this.replaceRoute('prechat-form');
       IFrameHelper.sendMessage({
         event: 'onEvent',
@@ -156,23 +147,3 @@ export default {
     </CustomButton>
   </div>
 </template>
-
-<style scoped lang="scss">
-@import 'widget/assets/scss/variables.scss';
-
-.branding {
-  align-items: center;
-  color: $color-body;
-  display: flex;
-  font-size: $font-size-default;
-  justify-content: center;
-  padding: $space-one;
-  text-align: center;
-  text-decoration: none;
-
-  img {
-    margin-right: $space-small;
-    max-width: $space-two;
-  }
-}
-</style>
