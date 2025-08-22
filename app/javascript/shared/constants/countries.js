@@ -366,6 +366,18 @@ const countries = [
     id: 'DO',
   },
   {
+    name: 'Dominican Republic',
+    dial_code: '+1809',
+    emoji: '🇩🇴',
+    id: 'DO',
+  },
+  {
+    name: 'Dominican Republic',
+    dial_code: '+1829',
+    emoji: '🇩🇴',
+    id: 'DO',
+  },
+  {
     name: 'Ecuador',
     dial_code: '+593',
     emoji: '🇪🇨',

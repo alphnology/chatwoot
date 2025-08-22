@@ -8,7 +8,8 @@ class Reports::TimeFormatPresenter
   end
 
   def format
-    return 'N/A' if seconds.nil? || seconds.zero?
+    return ' ' if seconds.nil? || seconds.zero?
+
 
     days, remainder = seconds.divmod(86_400)
     hours, remainder = remainder.divmod(3600)

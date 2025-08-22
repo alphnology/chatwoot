@@ -89,6 +89,8 @@ module Whatsapp::IncomingMessageServiceHelpers
 
   def process_in_reply_to(message)
     @in_reply_to_external_id = message['context']&.[]('id')
+    @in_reply_to_interactive_id = message['interactive']&.[]('list_reply')&.[]('id') || message['interactive']&.[]('button_reply')&.[]('id')
+    @flow_data = message['interactive']&.[]('nfm_reply')&.[]('response_json')
   end
 
   def find_message_by_source_id(source_id)

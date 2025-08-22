@@ -102,9 +102,9 @@ class Message < ApplicationRecord
   # [:deleted] : Used to denote whether the message was deleted by the agent
   # [:external_created_at] : Can specify if the message was created at a different timestamp externally
   # [:external_error : Can specify if the message creation failed due to an error at external API
-  store :content_attributes, accessors: [:submitted_email, :items, :submitted_values, :email, :in_reply_to, :deleted,
+  store :content_attributes, accessors: [:submitted_email, :items, :flow, :submitted_values, :email, :in_reply_to, :deleted,
                                          :external_created_at, :story_sender, :story_id, :external_error,
-                                         :translations, :in_reply_to_external_id, :is_unsupported], coder: JSON
+                                         :translations, :in_reply_to_external_id, :in_reply_to_interactive_id, :flow_data, :is_unsupported], coder: JSON
 
   store :external_source_ids, accessors: [:slack], coder: JSON, prefix: :external_source_id
 
@@ -254,11 +254,15 @@ class Message < ApplicationRecord
   def ensure_in_reply_to
     in_reply_to = content_attributes[:in_reply_to]
     in_reply_to_external_id = content_attributes[:in_reply_to_external_id]
+    in_reply_to_interactive_id = content_attributes[:in_reply_to_interactive_id]
+    flow_data = content_attributes[:flow_data]
 
     Messages::InReplyToMessageBuilder.new(
       message: self,
       in_reply_to: in_reply_to,
-      in_reply_to_external_id: in_reply_to_external_id
+      in_reply_to_external_id: in_reply_to_external_id,
+      in_reply_to_interactive_id: in_reply_to_interactive_id,
+      flow_data: flow_data
     ).perform
   end
 
