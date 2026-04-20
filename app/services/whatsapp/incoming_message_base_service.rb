@@ -188,7 +188,10 @@ class Whatsapp::IncomingMessageBaseService
       status: outgoing_echo ? :delivered : :sent,
       sender: outgoing_echo ? nil : @contact,
       source_id: (source_id || message[:id]).to_s,
-      content_attributes: content_attrs
+      content_attributes: content_attrs,
+      flow_data: @flow_data,
+      in_reply_to_external_id: @in_reply_to_external_id,
+      in_reply_to_interactive_id: @in_reply_to_interactive_id
     )
   end
 

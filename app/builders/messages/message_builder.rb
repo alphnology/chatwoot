@@ -18,6 +18,7 @@ class Messages::MessageBuilder
 
     @in_reply_to = content_attributes&.dig(:in_reply_to)
     @items = content_attributes&.dig(:items)
+    @flow = content_attributes&.dig(:flow)
   end
 
   def perform
@@ -142,7 +143,8 @@ class Messages::MessageBuilder
       items: @items,
       in_reply_to: @in_reply_to,
       echo_id: @params[:echo_id],
-      source_id: @params[:source_id]
+      source_id: @params[:source_id],
+      flow: @flow
     }.merge(external_created_at).merge(automation_rule_id).merge(campaign_id).merge(template_params)
   end
 
