@@ -2,26 +2,56 @@ import mila from 'markdown-it-link-attributes';
 import mentionPlugin from './markdownIt/link';
 import MarkdownIt from 'markdown-it';
 
+// [ALPHNOLOGY] Extended to support cw_image_width in addition to cw_image_height.
+// cw_image_width is used by the inline image paste feature (Shift+Cmd/Ctrl+V in email editor).
+//
+// MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
+// Upstream PR #14516 renames cw_image_height → cw_image_width as the primary dimension param
+// and updates @chatwoot/prosemirror-schema to write width instead of height.
+// When merging, consolidate setImageHeight + setImageWidth into a single function that
+// reads cw_image_width. Keep backward-compat for cw_image_height if old messages exist.
 const setImageHeight = inlineToken => {
   const imgSrc = inlineToken.attrGet('src');
   if (!imgSrc) return;
-  const url = new URL(imgSrc);
-  const height = url.searchParams.get('cw_image_height');
-  if (!height) return;
-  inlineToken.attrSet('style', `height: ${height};`);
+  try {
+    const url = new URL(imgSrc);
+    const height = url.searchParams.get('cw_image_height');
+    if (!height) return;
+    inlineToken.attrSet('style', `height: ${height};`);
+  } catch {
+    // invalid URL, skip silently
+  }
+};
+
+// [ALPHNOLOGY] Reads cw_image_width query param and applies it as an inline style.
+// Added alongside setImageHeight to support the inline image paste feature.
+const setImageWidth = inlineToken => {
+  const imgSrc = inlineToken.attrGet('src');
+  if (!imgSrc) return;
+  try {
+    const url = new URL(imgSrc);
+    const width = url.searchParams.get('cw_image_width');
+    if (!width) return;
+    const existingStyle = inlineToken.attrGet('style') || '';
+    inlineToken.attrSet('style', `${existingStyle}width: ${width};`.trim());
+  } catch {
+    // invalid URL, skip silently
+  }
 };
 
 const processInlineToken = blockToken => {
   blockToken.children.forEach(inlineToken => {
     if (inlineToken.type === 'image') {
       setImageHeight(inlineToken);
+      setImageWidth(inlineToken); // [ALPHNOLOGY] inline image width support
     }
   });
 };
 
 const imgResizeManager = md => {
   // Custom rule for image resize in markdown
-  // If the image url has a query param cw_image_height, then add a style attribute to the image
+  // If the image url has a query param cw_image_height or cw_image_width,
+  // then add a style attribute to the image.
   md.core.ruler.after('inline', 'add-image-height', state => {
     state.tokens.forEach(blockToken => {
       if (blockToken.type === 'inline') {

@@ -57,6 +57,13 @@
       "MEETING": "{sender} has started a meeting"
     },
     "UPLOADING_ATTACHMENTS": "Uploading attachments...",
+    "INLINE_IMAGE": {
+      "UPLOAD_SUCCESS": "Image inserted successfully",
+      "UPLOAD_ERROR": "Failed to insert image. Please try again.",
+      "UPLOAD_SIZE_ERROR": "Image exceeds the {size} MB limit. Please use a smaller image.",
+      "CLIPBOARD_PERMISSION_ERROR": "Clipboard access denied. Allow clipboard access in your browser settings to paste images directly.",
+      "TOOLTIP": "Paste image inline (Shift + Cmd/Ctrl + V)"
+    },
     "REPLIED_TO_STORY": "Replied to your story",
     "UNSUPPORTED_MESSAGE": "This message is unsupported. To view it, please open it on the original platform.",
     "UNSUPPORTED_MESSAGE_FACEBOOK": "This message is unsupported. You can view this message on the Facebook Messenger app.",
