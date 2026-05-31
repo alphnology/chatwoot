@@ -1,1 +1,2 @@
-import '../dashboard/assets/scss/super_admin/index.scss';
+// Super admin JavaScript entrypoint
+// CSS is loaded separately via superadmin.css for synchronous delivery

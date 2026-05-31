@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2458px" zoomAndPan="magnify"
-     viewBox="0 0 420 119.999999" height="512px" preserveAspectRatio="xMidYMid meet" version="1.0">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="420" zoomAndPan="magnify"
+     viewBox="0 0 420 119.999999" height="120" preserveAspectRatio="xMidYMid meet" version="1.0">
     <defs>
-        <filter x="0%" y="0%" width="100%" height="100%" id="db33a7c171">
+        <filter x="0%" y="0%" width="420" height="100%" id="db33a7c171">
             <feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" color-interpolation-filters="sRGB"/>
         </filter>
-        <filter x="0%" y="0%" width="100%" height="100%" id="6e33cbce01">
+        <filter x="0%" y="0%" width="420" height="100%" id="6e33cbce01">
             <feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2126 0.7152 0.0722 0 0"
                            color-interpolation-filters="sRGB"/>
         </filter>

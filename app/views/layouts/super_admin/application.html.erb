@@ -24,7 +24,8 @@ By default, it renders:
   <link rel="icon" type="image/svg+xml" href="/brand-assets/logo_thumbnail.svg">
   <%= render "stylesheet" %>
   <%= vite_client_tag %>
-  <%= vite_javascript_tag 'superadmin' %>
+  <%= vite_stylesheet_tag 'superadmin.css' %>
+  <%= vite_javascript_tag 'superadmin_pages' %>
   <%= csrf_meta_tags %>
 </head>
 <body class="antialiased w-full h-full">
