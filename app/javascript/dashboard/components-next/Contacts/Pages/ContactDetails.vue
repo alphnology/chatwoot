@@ -11,6 +11,7 @@ import ContactLabels from 'dashboard/components-next/Contacts/ContactLabels/Cont
 import ContactsForm from 'dashboard/components-next/Contacts/ContactsForm/ContactsForm.vue';
 import ConfirmContactDeleteDialog from 'dashboard/components-next/Contacts/ContactsForm/ConfirmContactDeleteDialog.vue';
 import Policy from 'dashboard/components/policy.vue';
+import { SHOW_CONTACT_DELETE_ACTION } from 'dashboard/constants/deleteActions';
 
 const props = defineProps({
   selectedContact: {
@@ -175,7 +176,7 @@ const handleAvatarDelete = async () => {
         @click="updateContact"
       />
     </div>
-    <Policy :permissions="['administrator']">
+    <Policy v-if="SHOW_CONTACT_DELETE_ACTION" :permissions="['administrator']">
       <div
         class="flex flex-col items-start w-full gap-4 pt-6 border-t border-n-strong"
       >

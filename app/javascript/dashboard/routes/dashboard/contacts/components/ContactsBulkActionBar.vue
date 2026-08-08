@@ -7,6 +7,7 @@ import BulkSelectBar from 'dashboard/components-next/captain/assistant/BulkSelec
 import Button from 'dashboard/components-next/button/Button.vue';
 import LabelActions from 'dashboard/components/widgets/conversation/conversationBulkActions/LabelActions.vue';
 import Policy from 'dashboard/components/policy.vue';
+import { SHOW_CONTACT_DELETE_ACTION } from 'dashboard/constants/deleteActions';
 
 const props = defineProps({
   visibleContactIds: {
@@ -145,7 +146,10 @@ const handleAssignLabels = labels => {
               />
             </transition>
           </div>
-          <Policy :permissions="['administrator']">
+          <Policy
+            v-if="SHOW_CONTACT_DELETE_ACTION"
+            :permissions="['administrator']"
+          >
             <Button
               v-tooltip.bottom="t('CONTACTS_BULK_ACTIONS.DELETE_CONTACTS')"
               sm

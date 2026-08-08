@@ -12,6 +12,7 @@ import ComposeConversation from 'dashboard/components-next/NewConversation/Compo
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import VoiceCallButton from 'dashboard/components-next/Contacts/VoiceCallButton.vue';
+import { SHOW_CONTACT_DELETE_ACTION } from 'dashboard/constants/deleteActions';
 
 import {
   isAConversationRoute,
@@ -50,6 +51,7 @@ export default {
   },
   data() {
     return {
+      SHOW_CONTACT_DELETE_ACTION,
       showEditModal: false,
       showMergeModal: false,
       showDeleteModal: false,
@@ -307,7 +309,7 @@ export default {
           @click="openMergeModal"
         />
         <NextButton
-          v-if="isAdmin"
+          v-if="isAdmin && SHOW_CONTACT_DELETE_ACTION"
           v-tooltip.top-end="$t('DELETE_CONTACT.BUTTON_LABEL')"
           icon="i-ph-trash"
           slate
