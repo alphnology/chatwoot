@@ -11,6 +11,7 @@ import MenuItem from './menuItem.vue';
 import MenuItemWithSubmenu from './menuItemWithSubmenu.vue';
 import wootConstants from 'dashboard/constants/globals';
 import AgentLoadingPlaceholder from './agentLoadingPlaceholder.vue';
+import { SHOW_CONVERSATION_DELETE_ACTION } from 'dashboard/constants/deleteActions';
 
 const MENU = {
   MARK_AS_READ: 'mark-as-read',
@@ -82,6 +83,7 @@ export default {
   data() {
     return {
       MENU,
+      SHOW_CONVERSATION_DELETE_ACTION,
       STATUS_TYPE: wootConstants.STATUS_TYPE,
       readOption: {
         label: this.$t('CONVERSATION.CARD_CONTEXT_MENU.MARK_AS_READ'),
@@ -382,7 +384,11 @@ export default {
         @click.stop="copyConversationLink"
       />
     </template>
-    <template v-if="isAdmin && isAllowed([MENU.DELETE])">
+    <template
+      v-if="
+        SHOW_CONVERSATION_DELETE_ACTION && isAdmin && isAllowed([MENU.DELETE])
+      "
+    >
       <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
       <MenuItem
         :option="deleteOption"

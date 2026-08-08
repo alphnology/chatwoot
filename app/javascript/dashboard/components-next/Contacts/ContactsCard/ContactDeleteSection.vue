@@ -6,6 +6,7 @@ import { useToggle } from '@vueuse/core';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ConfirmContactDeleteDialog from 'dashboard/components-next/Contacts/ContactsForm/ConfirmContactDeleteDialog.vue';
 import Policy from 'dashboard/components/policy.vue';
+import { SHOW_CONTACT_DELETE_ACTION } from 'dashboard/constants/deleteActions';
 
 defineProps({
   selectedContact: {
@@ -26,7 +27,10 @@ const openConfirmDeleteContactDialog = () => {
 
 <template>
   <Policy :permissions="['administrator']">
-    <div class="flex flex-col items-start border-t border-n-strong px-6 py-5">
+    <div
+      v-if="SHOW_CONTACT_DELETE_ACTION"
+      class="flex flex-col items-start border-t border-n-strong px-6 py-5"
+    >
       <Button
         :label="t('CONTACTS_LAYOUT.DETAILS.DELETE_CONTACT')"
         sm
@@ -61,6 +65,7 @@ const openConfirmDeleteContactDialog = () => {
       </div>
     </div>
     <ConfirmContactDeleteDialog
+      v-if="SHOW_CONTACT_DELETE_ACTION"
       ref="confirmDeleteContactDialogRef"
       :selected-contact="selectedContact"
     />

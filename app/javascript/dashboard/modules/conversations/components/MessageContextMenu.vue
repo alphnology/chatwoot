@@ -14,6 +14,7 @@ import {
 import MenuItem from '../../../components/widgets/conversation/contextMenu/menuItem.vue';
 import { useTrack } from 'dashboard/composables';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import { SHOW_MESSAGE_DELETE_ACTION } from 'dashboard/constants/deleteActions';
 
 export default {
   components: {
@@ -54,6 +55,7 @@ export default {
   },
   data() {
     return {
+      SHOW_MESSAGE_DELETE_ACTION,
       isCannedResponseModalOpen: false,
       showDeleteModal: false,
     };
@@ -243,9 +245,9 @@ export default {
           variant="icon"
           @click.stop="showCannedResponseModal"
         />
-        <hr v-if="enabledOptions['delete']" />
+        <hr v-if="SHOW_MESSAGE_DELETE_ACTION && enabledOptions['delete']" />
         <MenuItem
-          v-if="enabledOptions['delete']"
+          v-if="SHOW_MESSAGE_DELETE_ACTION && enabledOptions['delete']"
           :option="{
             icon: 'delete',
             label: $t('CONVERSATION.CONTEXT_MENU.DELETE'),
