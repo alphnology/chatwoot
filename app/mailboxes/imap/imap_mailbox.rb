@@ -4,6 +4,7 @@ class Imap::ImapMailbox
   attr_accessor :channel, :account, :inbox, :conversation, :processed_mail
 
   FALLBACK_CONVERSATION_PATTERN = %r{account/(\d+)/conversation/([a-zA-Z0-9-]+)@}
+  MESSAGE_PATTERN = %r{conversation/([a-zA-Z0-9-]+)/messages/(\d+)@}
 
   def process(mail, channel)
     @inbound_mail = mail
@@ -41,6 +42,12 @@ class Imap::ImapMailbox
 
   def find_conversation_by_in_reply_to
     return if in_reply_to.blank?
+
+    match = MESSAGE_PATTERN.match(in_reply_to)
+    if match
+      conversation = @inbox.conversations.find_by(uuid: match[1])
+      return conversation if conversation
+    end
 
     message = @inbox.messages.find_by(source_id: in_reply_to)
     if message.nil?

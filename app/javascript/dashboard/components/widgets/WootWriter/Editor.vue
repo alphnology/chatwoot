@@ -112,6 +112,29 @@ const effectiveChannelType = computed(() =>
   getEffectiveChannelType(props.channelType, props.medium)
 );
 
+// [ALPHNOLOGY] Inline image paste feature (Shift + Cmd/Ctrl + V).
+// Only available for email and web-widget channels in non-private (public reply) mode.
+// Images are uploaded to ActiveStorage and inserted as <img src="url"> nodes in the
+// editor body, so they travel inline inside the HTML of the outgoing email.
+//
+// We detect the shortcut via the keydown handler (not the paste event) because macOS
+// intercepts Shift+Cmd+V as "Paste and Match Style" before it reaches ProseMirror's paste
+// handler. The keydown fires first, we call event.preventDefault(), then read the clipboard
+// via navigator.clipboard.read() to extract the image.
+//
+// MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
+// When merging:
+//   1. Remove this computed, `pasteInlineImageFromClipboard`, and `handleInlineImagePasteShortcut`.
+//   2. Remove the Shift+Cmd/Ctrl+V branch in `onKeydown`.
+//   3. Apply the upstream keydown-based handler from PR #14516 instead.
+//   4. Upstream also upgrades @chatwoot/prosemirror-schema — follow the package bump.
+const allowsInlineImagePaste = computed(
+  () =>
+    !props.isPrivate &&
+    (props.channelType === 'Channel::Email' ||
+      props.channelType === 'Channel::WebWidget')
+);
+
 const editorSchema = computed(() => {
   if (!props.channelType) return messageSchema;
 
@@ -556,6 +579,74 @@ async function uploadImageToStorage(file) {
   }
 }
 
+// [ALPHNOLOGY] Uploads an image File and inserts it inline at the cursor position.
+// Accepts a native File object. Called by handleInlineImagePasteShortcut after the image
+// is extracted from the clipboard via navigator.clipboard.read().
+//
+// MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
+// When merging, replace this function with the upstream version. Toast keys may differ —
+// upstream uses 'CONVERSATION.REPLY.INLINE_IMAGE_UPLOAD_SUCCESS' (verify in the PR).
+async function pasteInlineImageFromClipboard(file) {
+  try {
+    if (!file) return;
+
+    if (!checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) {
+      useAlert(
+        t('CONVERSATION.INLINE_IMAGE.UPLOAD_SIZE_ERROR', {
+          size: MAXIMUM_FILE_UPLOAD_SIZE,
+        })
+      );
+      return;
+    }
+
+    const { fileUrl } = await uploadFile(file);
+    if (fileUrl) {
+      onImageInsertInEditor(fileUrl);
+      useAlert(t('CONVERSATION.INLINE_IMAGE.UPLOAD_SUCCESS'));
+    }
+  } catch {
+    useAlert(t('CONVERSATION.INLINE_IMAGE.UPLOAD_ERROR'));
+  }
+}
+
+// [ALPHNOLOGY] Reads an image from the clipboard via navigator.clipboard.read() and
+// calls pasteInlineImageFromClipboard(). This is triggered from keydown (not the paste
+// event) so that macOS "Paste and Match Style" (Shift+Cmd+V) is blocked before the OS
+// processes it.
+//
+// MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
+// Remove this function when applying PR #14516 — upstream ships its own equivalent.
+async function handleInlineImagePasteShortcut() {
+  // navigator.clipboard.read() requires a secure context (HTTPS or localhost).
+  // Fall back to the file picker when unavailable or when permissions are denied.
+  if (navigator.clipboard?.read) {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      const imageItem = clipboardItems.find(item =>
+        item.types.some(type => type.startsWith('image/'))
+      );
+      if (imageItem) {
+        const imageType = imageItem.types.find(type =>
+          type.startsWith('image/')
+        );
+        const blob = await imageItem.getType(imageType);
+        const file = new File([blob], 'clipboard-image.png', {
+          type: imageType,
+        });
+        pasteInlineImageFromClipboard(file);
+        return;
+      }
+    } catch (err) {
+      if (err?.name === 'NotAllowedError') {
+        useAlert(t('CONVERSATION.INLINE_IMAGE.CLIPBOARD_PERMISSION_ERROR'));
+        return;
+      }
+      // Any other error (insecure context, API unavailable) — fall through to file picker
+    }
+  }
+  openFileBrowser();
+}
+
 function onFileChange() {
   const file = imageUpload.value.files[0];
   if (checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) {
@@ -644,6 +735,23 @@ function handleLineBreakWhenCmdAndEnterToSendEnabled(event) {
 }
 
 function onKeydown(event) {
+  // [ALPHNOLOGY] Inline image paste: intercept Shift+Cmd/Ctrl+V at keydown level so the
+  // browser never processes it as "Paste and Match Style" (macOS) or a regular paste.
+  // navigator.clipboard.read() is called here instead of reading event.clipboardData.
+  //
+  // MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
+  // Remove this block and adopt the upstream keydown-based handler from PR #14516.
+  if (
+    event.shiftKey &&
+    (event.metaKey || event.ctrlKey) &&
+    event.key.toLowerCase() === 'v' &&
+    allowsInlineImagePaste.value
+  ) {
+    event.preventDefault();
+    handleInlineImagePasteShortcut();
+    return;
+  }
+
   if (isEnterToSendEnabled()) {
     handleLineBreakWhenEnterToSendEnabled(event);
   }
@@ -681,6 +789,7 @@ function createEditorView() {
       },
       paste: (view, event) => {
         if (props.disabled) return;
+
         const { files } = event.clipboardData;
         if (!files.length) return;
         event.preventDefault();

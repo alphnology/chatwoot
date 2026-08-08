@@ -2,7 +2,7 @@ class OauthCallbackController < ApplicationController
   def show
     @response = oauth_client.auth_code.get_token(
       oauth_code,
-      redirect_uri: "#{base_url}/#{provider_name}/callback"
+      { redirect_uri: "#{base_url}/#{provider_name}/callback" }.merge(token_exchange_params)
     )
 
     handle_response
@@ -61,6 +61,10 @@ class OauthCallbackController < ApplicationController
 
   def oauth_client
     raise NotImplementedError
+  end
+
+  def token_exchange_params
+    {}
   end
 
   def create_channel_with_inbox
