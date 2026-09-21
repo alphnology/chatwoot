@@ -1,18 +1,9 @@
-# [ALPHNOLOGY] Extended to support cw_image_width in addition to cw_image_height.
-# cw_image_width is used by the inline image paste feature added in this fork.
-#
-# MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
-# Upstream PR #14516 adds cw_image_width as the dimension param written by the updated
-# @chatwoot/prosemirror-schema imageResizeView. When merging:
-#   1. Confirm upstream's extract_image_dimensions method signature matches ours.
-#   2. Upstream may rename render_img_tag signature — reconcile parameter order.
-#   3. Keep backward-compat: cw_image_height should still work for old stored messages.
 class BaseMarkdownRenderer < CommonMarker::HtmlRenderer
   def image(node)
     src, title = extract_img_attributes(node)
-    height, width = extract_image_dimensions(src)
+    sizing_style = extract_image_sizing_style(src)
 
-    render_img_tag(src, title, height, width)
+    render_img_tag(src, title, sizing_style)
   end
 
   private
@@ -24,14 +15,25 @@ class BaseMarkdownRenderer < CommonMarker::HtmlRenderer
     ]
   end
 
-  # [ALPHNOLOGY] Returns [height, width] from cw_image_height / cw_image_width query params.
-  # width takes precedence for sizing when both are present (width + auto height is more
-  # email-client-friendly than fixed height + auto width).
-  def extract_image_dimensions(src)
+  # Drag-resize from the reply editor encodes the chosen width as cw_image_width
+  # on the URL; the older message-signature picker uses cw_image_height. Width
+  # wins when both are set so the agent's most recent intent is honored.
+  def extract_image_sizing_style(src)
     query_params = parse_query_params(src)
-    height = query_params['cw_image_height']&.first
-    width  = query_params['cw_image_width']&.first
-    [height, width]
+    width = sanitize_pixel_value(query_params['cw_image_width']&.first)
+    return "width: #{width}; max-width: 100%; height: auto;" if width
+
+    height = sanitize_pixel_value(query_params['cw_image_height']&.first)
+    height ? "height: #{height};" : nil
+  end
+
+  # Only allow a bounded `<digits>px` value so the decoded query param can't
+  # break out of the inline style attribute (HTML attribute injection).
+  def sanitize_pixel_value(raw)
+    return unless raw =~ /\A(\d+)px\z/
+
+    px = Regexp.last_match(1).to_i
+    "#{px}px" if px.between?(1, 2000)
   end
 
   def parse_query_params(url)
@@ -41,22 +43,17 @@ class BaseMarkdownRenderer < CommonMarker::HtmlRenderer
     {}
   end
 
-  # [ALPHNOLOGY] Supports width attribute in addition to height.
-  # Width takes precedence: if width is set, use width + auto height (safer across email clients).
-  # Falls back to height + auto width for backward compatibility with existing messages.
-  def render_img_tag(src, title, height = nil, width = nil)
+  def render_img_tag(src, title, sizing_style = nil)
     title_attribute = title.present? ? " title=\"#{title}\"" : ''
-    size_attribute  = if width
-                        " width=\"#{width}\" height=\"auto\""
-                      elsif height
-                        " height=\"#{height}\" width=\"auto\""
-                      else
-                        ''
-                      end
+    # Use inline style instead of HTML width/height attributes: email clients
+    # and the in-app Letter view both run images through CSS (e.g. prose /
+    # lettersanitizer's `img { height: auto }`) which overrides presentational
+    # attributes. Inline style has higher specificity and survives.
+    style_attribute = sizing_style ? " style=\"#{sizing_style}\"" : ''
 
     plain do
       # plain ensures that the content is not wrapped in a paragraph tag
-      out("<img src=\"#{src}\"#{title_attribute}#{size_attribute} />")
+      out("<img src=\"#{src}\"#{title_attribute}#{style_attribute} />")
     end
   end
 end

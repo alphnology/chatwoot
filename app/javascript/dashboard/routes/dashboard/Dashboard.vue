@@ -17,7 +17,7 @@ const CommandBar = defineAsyncComponent(
 );
 
 const FloatingCallWidget = defineAsyncComponent(
-  () => import('dashboard/components/widgets/FloatingCallWidget.vue')
+  () => import('dashboard/components-next/call/FloatingCallWidget.vue')
 );
 
 import CopilotLauncher from 'dashboard/components-next/copilot/CopilotLauncher.vue';
@@ -140,7 +140,9 @@ export default {
       @close-mobile-sidebar="closeMobileSidebar"
     />
 
-    <main class="flex flex-1 h-full w-full min-h-0 px-0 overflow-hidden">
+    <main
+      class="flex flex-1 h-full w-full min-h-0 px-0 overflow-hidden bg-n-surface-1"
+    >
       <UpgradePage
         v-show="showUpgradePage"
         ref="upgradePageRef"

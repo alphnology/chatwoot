@@ -1,4 +1,6 @@
 <script setup>
+import { useAdmin } from 'dashboard/composables/useAdmin';
+import { useBranding } from 'shared/composables/useBranding';
 import Icon from 'next/icon/Icon.vue';
 import ButtonV4 from 'next/button/Button.vue';
 
@@ -22,6 +24,14 @@ defineProps({
 });
 
 const emit = defineEmits(['upgrade']);
+
+// Cloud agents land on this modal too, but billing is admin-only — they need
+// the escalation message instead of a button they cannot use. Mirrors the
+// pattern in UpgradePage.vue.
+const { isAdmin } = useAdmin();
+// [ALPHNOLOGY] Paywall copy is authored with "Chatwoot" upstream; render it through the
+// installation name so branded installs (Octopus) don't leak the upstream brand.
+const { replaceInstallationName } = useBranding();
 </script>
 
 <template>
@@ -42,16 +52,21 @@ const emit = defineEmits(['upgrade']);
       </span>
     </div>
     <p
-      v-dompurify-html="$t(`${featurePrefix}.${i18nKey}.AVAILABLE_ON`)"
+      v-dompurify-html="
+        replaceInstallationName($t(`${featurePrefix}.${i18nKey}.AVAILABLE_ON`))
+      "
       class="text-sm font-normal text-n-slate-11"
     />
     <p class="text-sm font-normal text-n-slate-11">
       {{ $t(`${featurePrefix}.${i18nKey}.UPGRADE_PROMPT`) }}
-      <span v-if="!isOnChatwootCloud && !isSuperAdmin">
+      <span v-if="isOnChatwootCloud && !isAdmin">
+        {{ $t('GENERAL_SETTINGS.LIMIT_MESSAGES.NON_ADMIN') }}
+      </span>
+      <span v-else-if="!isOnChatwootCloud && !isSuperAdmin">
         {{ $t(`${featurePrefix}.ENTERPRISE_PAYWALL.ASK_ADMIN`) }}
       </span>
     </p>
-    <template v-if="isOnChatwootCloud">
+    <template v-if="isOnChatwootCloud && isAdmin">
       <ButtonV4 blue solid md @click="emit('upgrade')">
         {{ $t(`${featurePrefix}.PAYWALL.UPGRADE_NOW`) }}
       </ButtonV4>
@@ -59,7 +74,7 @@ const emit = defineEmits(['upgrade']);
         {{ $t(`${featurePrefix}.PAYWALL.CANCEL_ANYTIME`) }}
       </span>
     </template>
-    <template v-else-if="isSuperAdmin">
+    <template v-else-if="!isOnChatwootCloud && isSuperAdmin">
       <a href="/super_admin" class="block w-full">
         <ButtonV4 solid blue md class="w-full">
           {{ $t(`${featurePrefix}.PAYWALL.UPGRADE_NOW`) }}

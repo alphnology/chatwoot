@@ -1,58 +1,45 @@
+import MarkdownIt from 'markdown-it';
 import mila from 'markdown-it-link-attributes';
 import mentionPlugin from './markdownIt/link';
-import MarkdownIt from 'markdown-it';
 
-// [ALPHNOLOGY] Extended to support cw_image_width in addition to cw_image_height.
-// cw_image_width is used by the inline image paste feature (Shift+Cmd/Ctrl+V in email editor).
-//
-// MERGE NOTE (targeting upstream v4.15.0 / PR #14516):
-// Upstream PR #14516 renames cw_image_height → cw_image_width as the primary dimension param
-// and updates @chatwoot/prosemirror-schema to write width instead of height.
-// When merging, consolidate setImageHeight + setImageWidth into a single function that
-// reads cw_image_width. Keep backward-compat for cw_image_height if old messages exist.
-const setImageHeight = inlineToken => {
-  const imgSrc = inlineToken.attrGet('src');
-  if (!imgSrc) return;
-  try {
-    const url = new URL(imgSrc);
-    const height = url.searchParams.get('cw_image_height');
-    if (!height) return;
-    inlineToken.attrSet('style', `height: ${height};`);
-  } catch {
-    // invalid URL, skip silently
-  }
-};
-
-// [ALPHNOLOGY] Reads cw_image_width query param and applies it as an inline style.
-// Added alongside setImageHeight to support the inline image paste feature.
-const setImageWidth = inlineToken => {
+// [ALPHNOLOGY] Upstream PR #14516 owns image sizing now (cw_image_width, with
+// cw_image_height kept for legacy messages). The sole fork deviation is the try/catch
+// in the body: inline-pasted images can carry relative or blob srcs, and an unguarded
+// `new URL()` throws and breaks rendering of the entire message. Candidate to upstream.
+const setImageSizing = inlineToken => {
   const imgSrc = inlineToken.attrGet('src');
   if (!imgSrc) return;
   try {
     const url = new URL(imgSrc);
     const width = url.searchParams.get('cw_image_width');
-    if (!width) return;
-    const existingStyle = inlineToken.attrGet('style') || '';
-    inlineToken.attrSet('style', `${existingStyle}width: ${width};`.trim());
+    if (width) {
+      inlineToken.attrSet(
+        'style',
+        `width: ${width}; max-width: 100%; height: auto;`
+      );
+      return;
+    }
+    const height = url.searchParams.get('cw_image_height');
+    if (height) inlineToken.attrSet('style', `height: ${height};`);
   } catch {
-    // invalid URL, skip silently
+    // relative or invalid URL — leave the image unstyled rather than throwing
   }
 };
 
 const processInlineToken = blockToken => {
   blockToken.children.forEach(inlineToken => {
     if (inlineToken.type === 'image') {
-      setImageHeight(inlineToken);
-      setImageWidth(inlineToken); // [ALPHNOLOGY] inline image width support
+      setImageSizing(inlineToken);
     }
   });
 };
 
 const imgResizeManager = md => {
-  // Custom rule for image resize in markdown
-  // If the image url has a query param cw_image_height or cw_image_width,
-  // then add a style attribute to the image.
-  md.core.ruler.after('inline', 'add-image-height', state => {
+  // If the image URL carries a cw_image_width or cw_image_height query param,
+  // add an inline style attribute so the rendered <img> respects the agent's
+  // resize choice. Width takes precedence (HC drag-resize); height is kept for
+  // legacy messages and the message-signature use case.
+  md.core.ruler.after('inline', 'add-image-sizing', state => {
     state.tokens.forEach(blockToken => {
       if (blockToken.type === 'inline') {
         processInlineToken(blockToken);
@@ -72,6 +59,7 @@ const createMarkdownInstance = (linkify = true) => {
     quotes: '\u201c\u201d\u2018\u2019',
     maxNesting: 20,
   })
+    .disable(['lheading'])
     .use(mentionPlugin)
     .use(imgResizeManager)
     .use(mila, {
@@ -82,6 +70,16 @@ const createMarkdownInstance = (linkify = true) => {
       },
     });
 };
+
+// Help center article tables persist column widths as an internal
+// `<!--cw-colwidths:...-->` comment before the table. It exists only for the
+// editor's markdown round-trip and must never surface as text — markdown-it runs
+// with `html: false`, which would otherwise escape it into a visible comment in
+// rendered/plain output (e.g. dashboard search snippets). Strip the whole marker
+// line, including any blockquote prefix, so a quoted table's `>` prefixes don't
+// collapse together and break table parsing.
+const COLWIDTHS_MARKER_REGEX =
+  /^[ \t>]*<!--cw-colwidths:[\d,]+-->[ \t]*\r?\n?/gm;
 
 const TWITTER_USERNAME_REGEX = /(^|[^@\w])@(\w{1,15})\b/g;
 const TWITTER_USERNAME_REPLACEMENT = '$1[@$2](http://twitter.com/$2)';
@@ -95,7 +93,7 @@ class MessageFormatter {
     isAPrivateNote = false,
     linkify = true
   ) {
-    this.message = message || '';
+    this.message = (message || '').replace(COLWIDTHS_MARKER_REGEX, '');
     this.isAPrivateNote = isAPrivateNote;
     this.isATweet = isATweet;
     this.linkify = linkify;
@@ -115,6 +113,11 @@ class MessageFormatter {
       );
     }
     return this.md.render(updatedMessage);
+  }
+
+  disableImageRendering() {
+    this.md.disable(['add-image-sizing']);
+    this.md.renderer.rules.image = () => '';
   }
 
   get formattedMessage() {

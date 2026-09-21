@@ -39,16 +39,29 @@ chk 3 "Taggable::Caching fix preserved (upstream ships Cache)" \
 
 chk A "manifest.json branded Octopus" \
     grep -qi octopus public/manifest.json
-chk B "at most 1 en i18n file still says 'Chatwoot'" \
-    bash -c "[ \$(grep -rl 'Chatwoot' app/javascript/dashboard/i18n/locale/en/ 2>/dev/null | wc -l) -le 1 ]"
-chk C "MessageFormatter handles cw_image_width" \
+# Category B is NOT "zero Chatwoot strings". Upstream deliberately authors copy containing
+# "Chatwoot" and re-brands it at render time via replaceInstallationName (useBranding), which
+# reads INSTALLATION_NAME (= 'Octopus'). Hardcoding the brand into those strings is redundant
+# and fights upstream. What must hold is that every remaining occurrence is either rendered
+# through the helper or is a non-user-facing token. Assert the render sites, not the strings.
+chk B "widget SDK global is octopusSettings" \
+    grep -q 'window.octopusSettings' app/javascript/dashboard/i18n/locale/en/inboxMgmt.json
+chk B "paywall copy rendered via replaceInstallationName" \
+    grep -q 'replaceInstallationName' app/javascript/dashboard/routes/dashboard/settings/components/BasePaywallModal.vue
+chk B "INSTALLATION_NAME still set to Octopus" \
+    grep -q "value: 'Octopus'" config/installation_config.yml
+# Category C (inline image paste) was UPSTREAMED in PR #14516 — upstream v4.16.2 ships
+# pasteInlineImageFromClipboard + the $mod+Shift+KeyV keymap and a hardened cw_image_width
+# renderer. The fork's copy is deleted, so its old invariants are retired. What remains is
+# that upstream's sizing support is present and the fork's try/catch guard survives.
+chk C "upstream image sizing present (MessageFormatter)" \
     grep -q cw_image_width app/javascript/shared/helpers/MessageFormatter.js
-chk C "base_markdown_renderer handles cw_image_width" \
+chk C "upstream image sizing present (renderer)" \
     grep -q cw_image_width lib/base_markdown_renderer.rb
-chk C "INLINE_IMAGE keys in en/conversation.json" \
-    grep -q INLINE_IMAGE app/javascript/dashboard/i18n/locale/en/conversation.json
-chk C "[ALPHNOLOGY] markers survive in Editor.vue" \
-    grep -q '\[ALPHNOLOGY\]' app/javascript/dashboard/components/widgets/WootWriter/Editor.vue
+chk C "fork's relative-URL guard kept in MessageFormatter" \
+    grep -q 'catch' app/javascript/shared/helpers/MessageFormatter.js
+chk C "upstream inline paste keymap wired" \
+    grep -q 'pasteInlineImageFromClipboard' app/javascript/dashboard/components/widgets/WootWriter/Editor.vue
 chk D "deleteActions: 6 consumers still guarded" \
     bash -c "[ \$(grep -rl deleteActions app/javascript | wc -l) -eq 6 ]"
 chk D "deleteActions: 3 flags still false" \
