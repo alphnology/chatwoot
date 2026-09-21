@@ -1,19 +1,33 @@
 #!/usr/bin/env bash
-# Post-merge customization audit for the Octopus fork.
-# Run from the repo root with the merge staged but NOT committed.
+# Customization audit for the Octopus fork. Two modes, picked automatically:
 #
-#   audit.sh <NEW_VER> [BASE_TAG] [OLD_BRANCH]
-#   audit.sh 4.16.2 v4.10.1 v4.10.1-dev-merge
+#   sync mode    — a merge is in progress (MERGE_HEAD exists): run it with the upstream merge
+#                  staged but NOT committed. Directions A, B and C.
+#   feature mode — no merge in progress: the pre-PR check for feat/* and fix/* branches.
+#                  Direction A invariants only, against the working tree.
+#
+#   audit.sh [NEW_TAG]          # NEW_TAG defaults to the tag MERGE_HEAD points at
+#   audit.sh v4.18.0
 #
 # Any FAIL blocks the commit. Invariants mirror references/customizations.md.
 
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1   # runnable from anywhere in the repo
 
-NEW_VER=${1:?usage: audit.sh <NEW_VER> [BASE_TAG] [OLD_BRANCH]}
-BASE=${2:-}
-OLD=${3:-}
-NEW_TAG=v$NEW_VER
+TAG_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'
+if git rev-parse --verify --quiet MERGE_HEAD >/dev/null; then
+  MODE=sync
+  NEW_TAG=${1:-$(git tag --points-at MERGE_HEAD | grep -E "$TAG_RE" | head -1)}
+  [ -n "$NEW_TAG" ] || { echo "MERGE_HEAD is not an upstream release tag — pass NEW_TAG"; exit 1; }
+  OLD=HEAD   # mid-merge, HEAD is still the pre-merge tip of sync/* (= octopus)
+else
+  MODE=feature
+  NEW_TAG=
+  OLD=HEAD
+fi
+# The upstream release the pre-merge tip is built on (tags only — see the merge-commit trap).
+BASE=$(git tag --merged "$OLD" --sort=-v:refname --list 'v[0-9]*' | grep -E "$TAG_RE" | head -1)
+echo "mode: $MODE   base: ${BASE:-?}   target: ${NEW_TAG:-n/a}"
 
 pass=0; fail=0
 chk() { # chk <CAT> <description> <command...>
@@ -28,8 +42,10 @@ hr() { printf '%s\n' "───────────────────�
 
 hr; echo "DIRECTION A — nothing of ours was lost"; hr
 
-chk 1 "schema.rb byte-identical to $NEW_TAG" \
-    git diff --quiet "$NEW_TAG" -- db/schema.rb
+if [ "$MODE" = sync ]; then
+  chk 1 "schema.rb byte-identical to $NEW_TAG" \
+      git diff --quiet "$NEW_TAG" -- db/schema.rb
+fi
 chk 2 "migration swap: exactly 2 files at those timestamps" \
     bash -c "[ \$(ls db/migrate | grep -cE '20250416182131|20250421082927') -eq 2 ]"
 chk 2 "migration swap: no duplicate class names" \
@@ -95,10 +111,11 @@ chk K "docker-compose.yaml has no version: key" \
 chk L "repro_threading.rb removed" \
     test ! -f repro_threading.rb
 chk M "this skill survived the merge" \
-    test -f .claude/skills/octopus-upstream-merge/SKILL.md
+    test -f .claude/skills/octopus/SKILL.md
 chk M "audit.sh still executable" \
-    test -x .claude/skills/octopus-upstream-merge/scripts/audit.sh
+    test -x .claude/skills/octopus/scripts/audit.sh
 
+if [ "$MODE" = sync ]; then
 hr; echo "DIRECTION B — nothing of theirs was reverted"; hr
 
 # NB: compare the TAG to the WORKING TREE (no ..HEAD). The audit runs mid-merge, before the
@@ -110,7 +127,7 @@ chk B2 "fork-untouched files identical to upstream" \
 chk B2 "no conflict markers anywhere" \
     bash -c "! git grep -qnE '^(<{7}|={7}|>{7})'"
 
-if [ -n "$BASE" ] && [ -n "$OLD" ]; then
+if [ -n "$BASE" ]; then
   echo
   echo "Suspected bad --ours (identical to $OLD, but upstream changed them in $BASE..$NEW_TAG):"
   tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
@@ -121,6 +138,10 @@ if [ -n "$BASE" ] && [ -n "$OLD" ]; then
   done < "$tmp/upstream_touched"
   echo "  (each is a file upstream changed that came through unchanged from the fork — review)"
 fi
+else
+  chk B2 "no conflict markers anywhere" \
+      bash -c "! git grep -qnE '^(<{7}|={7}|>{7})'"
+fi
 
 hr; echo "DIRECTION C — silent losses (auto-merged, never conflicted)"; hr
 echo "[ALPHNOLOGY] marker census (grow this every merge):"
@@ -128,5 +149,5 @@ git grep -l '\[ALPHNOLOGY\]' | sed 's/^/  /'
 
 hr
 printf 'RESULT: %d passed, %d failed\n' "$pass" "$fail"
-[ "$fail" -eq 0 ] && echo "AUDIT CLEAN — safe to commit" || echo "AUDIT FAILED — DO NOT COMMIT"
+[ "$fail" -eq 0 ] && echo "AUDIT CLEAN ($MODE mode) — safe to commit" || echo "AUDIT FAILED — DO NOT COMMIT"
 exit $(( fail > 0 ? 1 : 0 ))

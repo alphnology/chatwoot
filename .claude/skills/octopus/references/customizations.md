@@ -2,12 +2,13 @@
 
 Generated from `v4.10.1` (tag) → `v4.10.1-dev-merge`: **26 commits, 75 files, +2879/−308**.
 
+Since the 4.16.2 merge, all customizations live on the long-lived `octopus` branch.
 Regenerate the file list at runtime — never trust a stored one:
 
 ```bash
-BASE=v4.10.1 ; OLD=v4.10.1-dev-merge
-git diff --stat "$BASE..$OLD" | tail -1
-git diff --name-only "$BASE..$OLD" | sort
+BASE=$(git tag --merged octopus --sort=-v:refname --list 'v[0-9]*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+git diff --stat "$BASE..octopus" | tail -1
+git diff --name-only "$BASE..octopus" | sort
 ```
 
 What is stored here is only what git cannot tell you: **why** a file differs, **which
@@ -67,10 +68,14 @@ the fork's copy, and record that in the PR.
 
 Work top to bottom: mechanical first, judgement last.
 
+**Every new customization registers itself here as part of its own PR** (Flow F): a row in
+an existing category or a new category, plus an invariant `chk` line in `scripts/audit.sh`.
+A change that is not listed here is not protected in the next upstream sync.
+
 ### 1. `db/schema.rb`
 **Strategy:** `--theirs` wholesale, then regenerate if migrations were touched. See L1.
 ```sh
-git diff --quiet "v$NEW_VER" -- db/schema.rb   # must be byte-identical to upstream
+git diff --quiet "$NEW_TAG" -- db/schema.rb   # must be byte-identical to upstream
 ```
 
 ### 2. Migration timestamp swap
@@ -221,7 +226,7 @@ test ! -f repro_threading.rb
 ```
 
 ### M. This skill
-`.claude/skills/octopus-upstream-merge/**` — the merge workflow, this inventory, and the two
+`.claude/skills/octopus/**` — the branch workflow (named `octopus-upstream-merge` before), this inventory, and the two
 scripts. Tracked in the repo (`.gitignore` excludes only `.claude/settings.local.json`), so
 it is itself part of the fork's customization surface.
 
@@ -229,14 +234,14 @@ it is itself part of the fork's customization surface.
 conflicts. Expect it in the ours-only forecast list; it is **not** an UNCATEGORIZED finding.
 Step 8's inventory refresh rides along on the same branch and PR as the merge it describes.
 ```sh
-test -f .claude/skills/octopus-upstream-merge/SKILL.md
-test -x .claude/skills/octopus-upstream-merge/scripts/audit.sh
+test -f .claude/skills/octopus/SKILL.md
+test -x .claude/skills/octopus/scripts/audit.sh
 ```
 
 ---
 
 ## Merge history
 
-| date | range | conflicts | fork files auto-merged | PR |
-|---|---|---|---|---|
-| 2026-08-08 | 4.10.1 → 4.16.2 | 18 (forecast 38) | 57 | *pending* |
+| date | range | branch | conflicts | fork files auto-merged | PR |
+|---|---|---|---|---|---|
+| 2026-08-08 | 4.10.1 → 4.16.2 | `v4.16.2-dev-merge` (became the root of `octopus`) | 18 (forecast 38) | 57 | — |
