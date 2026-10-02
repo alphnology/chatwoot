@@ -80,8 +80,12 @@ class Whatsapp::Providers::BaseService
   def create_rows(items)
     rows = []
     items.each do |item|
-      row = { 'id' => item['value'], 'title' => item['title'] }
-      row['description'] = item['description'] if item.has_key?('description')
+      row = {
+        'id' => item['value'] || item[:value],
+        'title' => item['title'] || item[:title]
+      }
+      description = item_description(item)
+      row['description'] = description if description.present?
       rows << row
     end
     rows
@@ -98,12 +102,13 @@ class Whatsapp::Providers::BaseService
   end
 
   def create_payload_based_on_items(message)
+    items = message.content_attributes['items']
     if message.content_attributes.has_key?('flow')
       create_flow_payload(message)
-    elsif message.content_attributes['items'].length <= 3
-      create_button_payload(message)
-    else
+    elsif use_list_payload?(items)
       create_list_payload(message)
+    else
+      create_button_payload(message)
     end
   end
 
@@ -123,6 +128,14 @@ class Whatsapp::Providers::BaseService
     create_payload('flow', message.content, JSON.generate(flow_action))
   end
 
+  def use_list_payload?(items)
+    items.length > 3 || items.any? { |item| item_description(item).present? }
+  end
+
+  def item_description(item)
+    item['description'] || item[:description]
+  end
+
   def create_button_payload(message)
     buttons = create_buttons(message.content_attributes['items'])
     json_hash = { 'buttons' => buttons }
@@ -133,7 +146,11 @@ class Whatsapp::Providers::BaseService
     rows = create_rows(message.content_attributes['items'])
     section1 = { 'rows' => rows }
     sections = [section1]
-    json_hash = { :button => 'Opciones', 'sections' => sections }
+    # [ALPHNOLOGY] Label in the account's language (es.yml carries 'Opciones'); sends run in the default locale.
+    label = I18n.t('conversations.messages.whatsapp.list_button_label', locale: message.account.locale)
+    json_hash = { :button => label, 'sections' => sections }
     create_payload('list', message.outgoing_content, JSON.generate(json_hash))
   end
 end
+
+Whatsapp::Providers::BaseService.prepend_mod_with('Whatsapp::Providers::BaseService')

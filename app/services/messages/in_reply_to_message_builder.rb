@@ -1,5 +1,5 @@
 class Messages::InReplyToMessageBuilder
-  pattr_initialize [:message!, :in_reply_to!, :in_reply_to_external_id!, :in_reply_to_interactive_id!, :flow_data!]
+  pattr_initialize [:message!, :in_reply_to!, :in_reply_to_external_id!]
 
   delegate :conversation, to: :message
 
