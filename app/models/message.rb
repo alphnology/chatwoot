@@ -55,6 +55,7 @@ class Message < ApplicationRecord
           'category': { 'type': 'string' },
           'language': { 'type': 'string' },
           'namespace': { 'type': 'string' },
+          'content_mode': { 'type': 'string', 'enum': %w[raw_template rendered] },
           'processed_params': { 'type': 'object' }
         },
         'required': %w[name]
@@ -111,7 +112,7 @@ class Message < ApplicationRecord
   store :content_attributes, accessors: [:submitted_email, :items, :submitted_values, :email, :in_reply_to, :deleted,
                                          :external_created_at, :story_sender, :story_id, :external_error,
                                          :translations, :in_reply_to_external_id, :is_unsupported, :data,
-                                         :in_reply_to_interactive_id, :flow, :flow_data], coder: JSON
+                                         :in_reply_to_interactive_id, :flow], coder: JSON
 
   store :external_source_ids, accessors: [:slack], coder: JSON, prefix: :external_source_id
 
@@ -310,15 +311,11 @@ class Message < ApplicationRecord
   def ensure_in_reply_to
     in_reply_to = content_attributes[:in_reply_to]
     in_reply_to_external_id = content_attributes[:in_reply_to_external_id]
-    in_reply_to_interactive_id = content_attributes[:in_reply_to_interactive_id]
-    flow_data = content_attributes[:flow_data]
 
     Messages::InReplyToMessageBuilder.new(
       message: self,
       in_reply_to: in_reply_to,
-      in_reply_to_external_id: in_reply_to_external_id,
-      in_reply_to_interactive_id: in_reply_to_interactive_id,
-      flow_data: flow_data
+      in_reply_to_external_id: in_reply_to_external_id
     ).perform
   end
 
@@ -457,6 +454,8 @@ class Message < ApplicationRecord
   end
 
   def reindex_for_search
+    return unless respond_to?(:reindex)
+
     reindex(mode: :async)
   end
 end
