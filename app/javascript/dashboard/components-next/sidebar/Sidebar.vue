@@ -360,6 +360,9 @@ const newReportRoutes = () => [
 
 const reportRoutes = computed(() => newReportRoutes());
 
+// [ALPHNOLOGY] Top-level menu entries hidden for Octopus installs.
+const HIDDEN_MENU_ITEMS = ['Captain', 'Portals'];
+
 const menuItems = computed(() => {
   return [
     {
@@ -949,7 +952,7 @@ const menuItems = computed(() => {
         },
       ],
     },
-  ];
+  ].filter(item => !HIDDEN_MENU_ITEMS.includes(item.name)); // [ALPHNOLOGY]
 });
 </script>
 
