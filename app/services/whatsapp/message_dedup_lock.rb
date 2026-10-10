@@ -16,4 +16,9 @@ class Whatsapp::MessageDedupLock
   def acquire!
     ::Redis::Alfred.set(@key, true, nx: true, ex: @ttl)
   end
+
+  # [ALPHNOLOGY] Lets a failed attempt be retried instead of being skipped as a duplicate.
+  def release!
+    ::Redis::Alfred.delete(@key)
+  end
 end
