@@ -51,8 +51,11 @@ class Contact < ApplicationRecord
   validates :email, allow_blank: true, uniqueness: { scope: [:account_id], case_sensitive: false },
                     format: { with: Devise.email_regexp, message: I18n.t('errors.contacts.email.invalid') }
   validates :identifier, allow_blank: true, uniqueness: { scope: [:account_id] }
+  # [ALPHNOLOGY] Uniqueness is checked only when the phone number is set or changed. Contacts that
+  # already share a number (bulk imports) must stay saveable, or every unrelated update on them
+  # raises, including the WhatsApp identifier sync that runs before an incoming message is stored.
   validates :phone_number,
-            allow_blank: true, uniqueness: { scope: [:account_id] },
+            allow_blank: true, uniqueness: { scope: [:account_id], if: :will_save_change_to_phone_number? },
             format: { with: /\A\+[1-9]\d{1,14}\z/, message: I18n.t('errors.contacts.phone_number.invalid') }
 
   belongs_to :account

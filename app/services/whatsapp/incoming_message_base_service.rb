@@ -38,6 +38,16 @@ class Whatsapp::IncomingMessageBaseService
     return if find_message_by_source_id(messages_data.first[:id])
     return unless lock_message_source_id!
 
+    begin
+      store_message
+    ensure
+      # [ALPHNOLOGY] The lock outlives the job (1 day), so if nothing was stored it must be released:
+      # otherwise the Sidekiq retry is skipped as a duplicate and the message is lost for good.
+      Whatsapp::MessageDedupLock.new(messages_data.first[:id]).release! unless @message&.persisted?
+    end
+  end
+
+  def store_message
     set_contact
     return unless @contact
     return if @contact.blocked? && !outgoing_echo
