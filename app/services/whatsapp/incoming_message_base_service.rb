@@ -99,6 +99,8 @@ class Whatsapp::IncomingMessageBaseService
 
   def create_regular_message(message)
     create_message(message, source_id: message[:id])
+    # [ALPHNOLOGY] preserve the sticker content type
+    @message.content_type = :sticker if message_type == 'sticker'
     attach_files
     attach_location if message_type == 'location'
     @message.save!
